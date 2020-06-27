@@ -1,0 +1,83 @@
+# Jakub Gonet
+
+
+def divide_into_pretty(k):
+    digits = [0] * 10
+    i = 1
+    while i < k:
+        digits[(k // i) % 10] += 1
+        i *= 10
+    pretty = 0
+    not_pretty = 0
+    for d in digits:
+        if d == 1:
+            pretty += 1
+        elif d > 1:
+            not_pretty += 1
+
+    return pretty, not_pretty
+
+
+def counting_sort_pretty(T):
+    n = len(T)
+    count = [0] * 10
+    result = [None] * n
+    for c, e in T:
+        pretty, _ = c
+        count[pretty] += 1
+    for i in range(1, len(count)):
+        count[i] += count[i - 1]
+
+    for c, e in reversed(T):
+        pretty, _ = c
+        count[pretty] -= 1
+        result[n - count[pretty] - 1] = e
+    return result
+
+
+def counting_sort_not_pretty(T):
+    n = len(T)  # O(1)
+    count = [0] * 10  # O(1)
+    result = [None] * n  # O(1)
+    # count occurences
+    for c, _ in T:  # O(n)
+        _, not_pretty = c
+        count[not_pretty] += 1
+    # accumulate counts
+    for i in range(1, len(count)):  # O(1)
+        count[i] += count[i - 1]
+    # reversed is a iterator, so doesn't create new array, O(n)
+    for c, e in reversed(T):
+        _, not_pretty = c
+        count[not_pretty] -= 1
+        # save from back
+        result[n - count[not_pretty] - 1] = (c, e)
+    # total - O(n)
+    return result
+
+
+def pretty_sort(T):
+    # dividing every number into pair of pretty and not pretty number of digits - O(k), where k is number of digits in all numbers
+    X = [(divide_into_pretty(x), x) for x in T]
+    # sorting first by not pretty number, then by pretty number, using counting sort
+    # this order numbers with same not pretty number in right order, then we fix this order by moving prettier to top
+    # we know that max of pretty numbers is 10 numbers and non pretty numbers is also 10
+    X = counting_sort_not_pretty(X)  # O(n)
+    X = counting_sort_pretty(X)  # O(n)
+    # total O(n+k)
+    return X
+
+
+def main():
+    A = [
+        123,
+        455,
+        1266,
+        114577,
+        2344,
+        2344,
+    ]
+    print(pretty_sort(A))  #  123, 1266, 2344, 2344, 114577, 455
+
+
+main()

@@ -1,0 +1,15 @@
+# Jakub Gonet
+
+1. Oazy są połączone miastami.
+2. Wchodząc do miasta można przejść wyłącznie z jednego wyjścia do drugiego
+3. Każde z wyjść zawsze prowadzi do jednej oazy
+
+Traktując oazy jako wierzchołki (1.), a miasta jako krawędzie nieskierowane (2. i 3.) naszym celem jest przejście od krawędzi $x$,
+po wszystkich krawędziach-miastach jeden raz i powrót do $x$.
+
+4. Oazy mają stopień >= 1 ("składa się z miast oraz oaz **połączonych drogami**)
+
+Jako, że istnieją dwa rodzaje dróg (krawędzie-miasta i drogi między oazami) to możemy scalić je w jedną oazę (potecjalnie tworząc multigraf)
+w czasie O(E) - przechodząc po krawędziach i sprawdzając czy krawędź nie jest miastem
+
+Następnie szukamy cyklu Eulera - każdy wierzchołek powinien mieć stopień parzysty.

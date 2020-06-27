@@ -1,0 +1,53 @@
+# Jakub Gonet
+
+
+def partition(A, start, end, pivot):
+    i = start
+    for k in range(start, end):  # sum of n times O(1) = O(n)
+        if A[k] < pivot:
+            A[k], A[i] = A[i], A[k]  # O(1)
+            i += 1
+    A[i], A[end] = A[end], A[i]
+    return i
+
+
+def quickselect(A, start, end, k):
+    if start == end:
+        return A[start]
+    # worst case depends on pivot selection, here will be O(n^2),
+    # but we can use median of three (which can degrade O(n^2) AFAIK) or median of medians (always O(n)) for better performance
+    pivot_i = end
+
+    # partition is O(end-start), in first run O(n), in subsequent we narrow down this, so
+    # when selecting middle of start and end index we end up ordering n + n/2 + n/4 +...+2 <= 2n elements, so O(n)
+    pivot_i = partition(A, start, end, pivot_i)
+
+    if k == pivot_i:
+        return A[k]
+    # we always take one or other branch narrowing search, so that's O(log(n))
+    elif k < pivot_i:
+        return quickselect(A, start, pivot_i - 1, k)
+    else:
+        return quickselect(A, pivot_i + 1, end, k)
+
+
+def section(T, p, q):
+    """
+    We use quickselect to partially order elements first on `p` position, so elements bigger than it are to the right of `p`
+    then we quickselect `q`, so the smaller elements are on left of it. We look for soldiers heights between these two, 
+    so after first select we can narrow down range [start, end] to [p, end] when looking for `q` (it won't move elements before `p` in that way).
+    After partially sorting on those two positions we can grab every element between, because they're bigger than `p` and smaller than `q`,
+    and create list of them.
+    """
+    quickselect(T, 0, len(T) - 1, p)
+    quickselect(T, p, len(T) - 1, q)
+
+    return [T[i] for i in range(p, q + 1)]
+
+
+def main():
+    T = [3, 8, 6, 7, 10, 2, 5, 1, 4, 9]  # shuffled [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    print(section(T, 3, 6))  # [4, 5, 6, 7]
+
+
+main()

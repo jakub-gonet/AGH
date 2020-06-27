@@ -1,0 +1,17 @@
+Jakub Gonet
+
+[2pkt.] Zadanie 3. Proszę zaproponować algorytm, który dla tablicy liczb całkowitych rozstrzyga 
+czy każda liczba z tablicy jest sumą dwóch innych liczb z tablicy. Zaproponowany
+algorytm powinien być możliwie jak najszybszy. Proszę oszacować jego złożoność obliczeniową.
+
+Na początku sortujemy tablicę A (O(n) / O(nlogn)), a potem dla każdego elementu A[i] przechodzimy dwoma wskaźnikami p i q:
+początkowo p = 0, q = n-1, gdzie n to długość tablicy
+- jezeli suma A[p] + A[q] jest większa niż liczba to dekrementujemy q,
+- jeżeli suma A[p] + A[q] jest mniejsza niż liczba to inkrementujemy p
+- jezeli suma jest równa A[i] to znaleźliśmy parę i możemy przejść do kolejnej liczby.
+
+Pętla kończy się gdy wskaźniki się skrzyżują, co znaczy, że nie można znaleźć pary sumującej się do danej liczby A[i],
+wtedy funkcja zwraca fałśz.
+Gdy znajdziemy parę dla każdej liczby funkcja zwraca prawdę
+
+Czas potrzebny na przejście całej tablicy to maksymalnie n/2 * n, co daje złożoność O(n^2)

@@ -1,0 +1,12 @@
+# Jakub Gonet
+
+Dostajemy listę n klocków, którą posortujemy w czasie O(nlogn) po początku klocka.
+Następnie będziemy próbować zachłannie wypełniać dany poziom, poczynając od początku:
+bierzemy pierwszy niezabrany klocek i kładziemy na osi. 
+Następnie bierzemy pierwszy niekolidujący z nim klocek, zapisując przerwę do listy przerw (w szczególności zapisując przerwę (-inf, start] oraz (end, inf))
+
+Kiedy nie będziemy mieć kolejnych niekolidujących wierzchołków bierzemy pierwszy kolejny, sprawdzamy czy istnieje przerwa, na którą byłby położony,
+jeżeli nie to go kładziemy i dodajemy nowe przerwy do listy. Robimy tak do momentu gdy zabraknie nam klocków, bądź będziemy mieć klocek, który będzie kolidował ze swoimi przerwami.
+Przerwy możemy szukać binarnie - logn.
+
+Algorytm będzie miał złożoność n^2, bo w najgorszym wypadku będziemy kładli tylko jeden klocek i zaczynali kłaść na kolejnym poziomie kolejny.

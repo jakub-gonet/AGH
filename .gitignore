@@ -2,3 +2,4 @@
 .vscode
 **/bin/*
 *.dSYM
+__pycache__

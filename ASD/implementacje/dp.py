@@ -71,26 +71,6 @@ def matrix_multiplication_optimization(matrices_dim):
 test(matrix_multiplication_optimization, [(([10, 20, 30, 40, 30],), 30000)])
 
 
-def cash_change_opt(nom, T):
-    def f(T):
-        if T == 0:
-            return 0
-        if T < 0:
-            return None
-        min_change = None
-        for n in nom:
-            change = f(T - n)
-            if change is not None:
-                if min_change is None or change < min_change:
-                    min_change = change + 1
-        return min_change
-
-    return f(T)
-
-
-test(cash_change_opt, [(([1, 5, 8], 15), 3), (([2], 7), None)])
-
-
 def chessboard_cheapest_route(A):
     N = len(A) - 1
 
@@ -128,3 +108,22 @@ test(
     ],
 )
 
+
+def cash_change_opt(nom, T):
+    def f(T):
+        if T == 0:
+            return 0
+        if T < 0:
+            return None
+        min_change = None
+        for n in nom:
+            change = f(T - n)
+            if change is not None:
+                if min_change is None or change < min_change:
+                    min_change = change + 1
+        return min_change
+
+    return f(T)
+
+
+test(cash_change_opt, [(([1, 5, 8], 15), 3), (([2], 7), None)])

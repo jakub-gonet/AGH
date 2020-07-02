@@ -1,5 +1,5 @@
-def test(function, args_tuple):
-    for args, expected in args_tuple:
+def test(function, args_list):
+    for args, expected in args_list:
         try:
             assert function(*args) == expected
             print(".", end="")

@@ -13,18 +13,18 @@ import Graphics.Rendering.Chart.Easy
     setColors,
     (.=),
   )
-import Solver (approxU)
+import Solver (approxU, domainEnd, domainStart)
 import System.Environment (getArgs)
 import System.Exit ()
 import Text.Read (readMaybe)
 
 approxPlot :: Int -> [(Double, Double)]
-approxPlot n = [(x, u x) | x <- [0, 0.1 .. 2]] :: [(Double, Double)]
+approxPlot n = [(x, u x) | x <- [domainStart, 0.1 .. domainEnd]] :: [(Double, Double)]
   where
     u = approxU n
 
 exactPlot :: [(Double, Double)]
-exactPlot = [(x, u x) | x <- [0, 0.1 .. 2]] :: [(Double, Double)]
+exactPlot = [(x, u x) | x <- [domainStart, 0.1 .. domainEnd]] :: [(Double, Double)]
   where
     u x = 0.5 * (x * cos x + ((cos 2 + 2 * sin 2) * sin x) / (cos 2 - sin 2))
 

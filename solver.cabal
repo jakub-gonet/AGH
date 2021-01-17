@@ -36,8 +36,6 @@ library
     , GaussQuadIntegration
     , base >=4.7 && <5
     , hmatrix
-    , linear
-    , numbers
   default-language: Haskell2010
 
 executable solver-exe
@@ -53,8 +51,6 @@ executable solver-exe
     , GaussQuadIntegration
     , base >=4.7 && <5
     , hmatrix
-    , linear
-    , numbers
     , solver
   default-language: Haskell2010
 
@@ -72,7 +68,5 @@ test-suite solver-test
     , GaussQuadIntegration
     , base >=4.7 && <5
     , hmatrix
-    , linear
-    , numbers
     , solver
   default-language: Haskell2010

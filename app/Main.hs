@@ -51,7 +51,6 @@ basisF'WithDomain n i x
     h = domainEnd / fromIntegral n
     hInverse = fromIntegral n / domainEnd
 
--- generateBMatrix :: (Int -> Int -> a) -> Int -> [[a]]
 generateBMatrix :: Int -> [[Double]]
 generateBMatrix n =
   [[b_ei_ej i j | j <- [1 .. n]] | i <- [1 .. n]]
@@ -66,9 +65,6 @@ generateBMatrix n =
     basisF = basisFWithDomain n
     basisF' = basisF'WithDomain n
 
--- max(0, min(x_i, x_j) - h) do min(2, max(x_i, x_j) + h)
-
--- generateLMatrix :: (Ord a, Num a) => Int -> [a]
 generateLMatrix :: Int -> [Double]
 generateLMatrix n =
   [l_ej j | j <- [1 .. n]]
@@ -96,7 +92,7 @@ main = do
 
   let b_matrix = fromLists $ generateBMatrix n
   let l_vector = (n >< 1) $ generateLMatrix n
-  let c_vector = toList $ flatten (fromJust $ linearSolve b_matrix l_vector)
+  let c_vector = 0 : (toList $ flatten (fromJust $ linearSolve b_matrix l_vector))
 
   print "B matrix"
   print b_matrix

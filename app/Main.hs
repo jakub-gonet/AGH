@@ -36,7 +36,7 @@ parseArg _ = 5
 main :: IO ()
 main = do
   args <- getArgs
-  let n = fromMaybe 5 . readMaybe . head $ args :: Int
+  let n = parseArg args :: Int
 
   toFile def "solution.svg" $ do
     layout_title .= "-u'' - u = sinx        u(0) = 0,    u'(2) - u(2) = 0"

@@ -15,7 +15,7 @@ integrate f shouldIntegrate
 -- basisF docs
 basisFWithDomain :: (Ord a, Fractional a) => Int -> Int -> a -> a
 basisFWithDomain n i x
-  | x < left || x > right = 0
+  | x < left || right < x = 0
   | x <= center = (x - left) * hInverse
   | otherwise = (right - x) * hInverse
   where
@@ -28,7 +28,7 @@ basisFWithDomain n i x
 
 basisF'WithDomain :: (Ord a, Fractional a) => Int -> Int -> a -> a
 basisF'WithDomain n i x
-  | x < left || x > right = 0
+  | x < left || right < x = 0
   | x <= center = hInverse
   | otherwise = - hInverse
   where

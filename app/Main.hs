@@ -80,10 +80,15 @@ parseArg _ = 5
 
 plotData c_vector n = [(x, u x) | x <- plotPoints] :: [(Double, Double)]
   where
-    plotPoints = [0, (0.1) .. 2]
+    plotPoints = [0, 0.1 .. 2]
     u x = sum $ [c_i * basisF i x | (i, c_i) <- enumerate c_vector]
     enumerate = zip [0 ..]
     basisF = basisFWithDomain n
+
+plotExactData = [(x, u x) | x <- plotPoints] :: [(Double, Double)]
+  where
+    plotPoints = [0, 0.1 .. 2]
+    u x = 0.5 * (x * cos x + ((cos 2 + 2 * sin 2) * sin x) / (cos 2 - sin 2))
 
 main :: IO ()
 main = do
@@ -104,6 +109,7 @@ main = do
   toFile def "mychart.svg" $ do
     layout_title .= "Data"
     setColors [opaque blue, opaque red]
-    plot (line "" [plotData c_vector n])
+    plot (line "Aproximate solution" [plotData c_vector n])
+    plot (line "Exact solution" [plotExactData])
 
   putStrLn "Done."

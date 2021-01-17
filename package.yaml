@@ -25,6 +25,8 @@ dependencies:
   - GaussQuadIntegration
   - numbers
   - hmatrix
+  - Chart-diagrams
+  - Chart
 
 library:
   source-dirs: src

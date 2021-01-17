@@ -3,18 +3,19 @@ module Main where
 import Data.Maybe
 import Graphics.Rendering.Chart.Backend.Diagrams (toFile)
 import Graphics.Rendering.Chart.Easy
-    ( layout_title,
-      Default(def),
-      line,
-      setColors,
-      plot,
-      opaque,
-      blue,
-      red,
-      (.=) )
+  ( Default (def),
+    blue,
+    layout_title,
+    line,
+    opaque,
+    plot,
+    red,
+    setColors,
+    (.=),
+  )
 import Lib (someFunc)
 import Math.GaussianQuadratureIntegration (nIntegrate256)
-import Numeric.LinearAlgebra (fromLists, linearSolve, luSolve, toLists, (><))
+import Numeric.LinearAlgebra (flatten, fromLists, linearSolve, luSolve, toList, toLists, (><))
 import System.Environment (getArgs)
 import System.Exit ()
 
@@ -53,23 +54,24 @@ basisF'WithDomain n i x
 -- generateBMatrix :: (Int -> Int -> a) -> Int -> [[a]]
 generateBMatrix :: Int -> [[Double]]
 generateBMatrix n =
-  [[b_ei_ej i j | j <- [0 .. n -1]] | i <- [0 .. n -1]]
+  [[b_ei_ej i j | j <- [1 .. n]] | i <- [1 .. n]]
   where
     -- B(u,v) = u(2)v(2) - int[0, 2] u'v'dx + int[0, 2] uvdx
     -- B(e_i, e_j) = e_i(2)*e_j(2) - int[0, 2] e_i'*e_j'dx + int[0, 2] e_i*e_jdx
-    b_ei_ej i j = u2v2 i j - int_u'_v' i j + int_u_v i j
+    b_ei_ej i j = u2v2 i j + ʃsub_u'v'_add_uvdx i j
     u2v2 i j = basisF i 2 * basisF j 2
-    int_u'_v' i j = integrate (\x -> basisF' i x * basisF' j x) $ near i j
-    int_u_v i j = integrate (\x -> basisF i x * basisF j x) $ near i j
+    ʃsub_u'v'_add_uvdx i j = integrate (\x -> - basisF' i x * basisF' j x + basisF i x * basisF j x) $ near i j
 
     near i j = abs (i - j) <= 1
     basisF = basisFWithDomain n
     basisF' = basisF'WithDomain n
 
+-- max(0, min(x_i, x_j) - h) do min(2, max(x_i, x_j) + h)
+
 -- generateLMatrix :: (Ord a, Num a) => Int -> [a]
 generateLMatrix :: Int -> [Double]
 generateLMatrix n =
-  [l_ej j | j <- [0 .. n -1]]
+  [l_ej j | j <- [1 .. n]]
   where
     -- L(v) = - int[0, 2] v*sindx
     -- L(e_j) = - int[0, 2] e_j*sindx
@@ -94,7 +96,7 @@ main = do
 
   let b_matrix = fromLists $ generateBMatrix n
   let l_vector = (n >< 1) $ generateLMatrix n
-  let c_vector = head $ toLists $ fromJust $ linearSolve b_matrix l_vector
+  let c_vector = toList $ flatten (fromJust $ linearSolve b_matrix l_vector)
 
   print "B matrix"
   print b_matrix

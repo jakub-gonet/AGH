@@ -7,9 +7,9 @@ import Numeric.LinearAlgebra (fromLists, linearSolve, (><))
 import System.Environment (getArgs)
 import System.Exit ()
 
-integrate :: (Fractional a, Ord a) => (a -> a) -> a -> a -> a
-integrate f i j
-  | abs (i - j) <= 1 = nIntegrate512 f i j
+integrate :: (Fractional a, Ord a) => (a -> a) -> Bool -> a
+integrate f shouldIntegrate
+  | shouldIntegrate = nIntegrate256 f 0 2
   | otherwise = 0
 
 -- basisF docs
@@ -48,9 +48,10 @@ generateBMatrix n =
     -- B(e_i, e_j) = e_i(2)*e_j(2) - int[0, 2] e_i'*e_j'dx + int[0, 2] e_i*e_jdx
     b_ei_ej i j = u2v2 i j - int_u'_v' i j + int_u_v i j
     u2v2 i j = basisF i 2 * basisF j 2
-    int_u'_v' i j = integrate (\x -> basisF' i x * basisF' j x) 0 2
-    int_u_v i j = integrate (\x -> basisF i x * basisF j x) 0 2
+    int_u'_v' i j = integrate (\x -> basisF' i x * basisF' j x) $ near i j
+    int_u_v i j = integrate (\x -> basisF i x * basisF j x) $ near i j
 
+    near i j = abs (i - j) <= 1
     basisF = basisFWithDomain n
     basisF' = basisF'WithDomain n
 
@@ -61,7 +62,7 @@ generateLMatrix n =
   where
     -- L(v) = - int[0, 2] v*sindx
     -- L(e_j) = - int[0, 2] e_j*sindx
-    l_ej j = - integrate (\x -> basisF j x * sin x) 0 2
+    l_ej j = - integrate (\x -> basisF j x * sin x) (j > 0)
     basisF = basisFWithDomain n
 
 parseArg :: [String] -> Int

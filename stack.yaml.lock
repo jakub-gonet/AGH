@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: GaussQuadIntegration-0.1@sha256:332c59cf37c3665c20182cfdd9c1858214cb07c52eccb047d9f28c9e5bc8a701,1694
+    pantry-tree:
+      size: 322
+      sha256: f60a3d7be7444a2d4c239b34cd1814d8ed65e103b97aa4ecfc68c7c6f51f5303
+  original:
+    hackage: GaussQuadIntegration-0.1
 snapshots:
 - completed:
     size: 533053

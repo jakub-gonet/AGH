@@ -9,19 +9,20 @@ import Graphics.Rendering.Chart.Easy
     line,
     opaque,
     plot,
+    points,
     red,
     setColors,
     (.=),
   )
-import Solver (approxU, domainEnd, domainStart)
+import Solver (coefficients, domainEnd, domainStart)
 import System.Environment (getArgs)
 import System.Exit ()
 import Text.Read (readMaybe)
 
 approxPlot :: Int -> [(Double, Double)]
-approxPlot n = [(x, u x) | x <- [domainStart, 0.1 .. domainEnd]] :: [(Double, Double)]
+approxPlot n = [((domainEnd - domainStart) / fromIntegral (length coef - 1) * i, c_i) | (i, c_i) <- zip [0 ..] coef] :: [(Double, Double)]
   where
-    u = approxU n
+    coef = coefficients n
 
 exactPlot :: [(Double, Double)]
 exactPlot = [(x, u x) | x <- [domainStart, 0.1 .. domainEnd]] :: [(Double, Double)]
@@ -37,10 +38,11 @@ main = do
   args <- getArgs
   let n = fromMaybe 5 . readMaybe . head $ args :: Int
 
-  toFile def "mychart.svg" $ do
-    layout_title .= "Data"
-    setColors [opaque blue, opaque red]
+  toFile def "solution.svg" $ do
+    layout_title .= "-u'' - u = sinx        u(0) = 0,    u'(2) - u(2) = 0"
+    setColors [opaque blue, opaque blue, opaque red]
     plot (line "Aproximate solution" [approxPlot n])
+    plot (points "" $ approxPlot n)
     plot (line "Exact solution" [exactPlot])
 
   putStrLn "Done."

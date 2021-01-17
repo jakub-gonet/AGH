@@ -1,9 +1,20 @@
 module Main where
 
 import Data.Maybe
+import Graphics.Rendering.Chart.Backend.Diagrams (toFile)
+import Graphics.Rendering.Chart.Easy
+    ( layout_title,
+      Default(def),
+      line,
+      setColors,
+      plot,
+      opaque,
+      blue,
+      red,
+      (.=) )
 import Lib (someFunc)
-import Math.GaussianQuadratureIntegration (nIntegrate512)
-import Numeric.LinearAlgebra (fromLists, linearSolve, (><))
+import Math.GaussianQuadratureIntegration (nIntegrate256)
+import Numeric.LinearAlgebra (fromLists, linearSolve, luSolve, toLists, (><))
 import System.Environment (getArgs)
 import System.Exit ()
 
@@ -69,15 +80,32 @@ parseArg :: [String] -> Int
 parseArg [arg] = read arg :: Int
 parseArg _ = 5
 
+plotData c_vector n = [(x, u x) | x <- plotPoints] :: [(Double, Double)]
+  where
+    plotPoints = [0, (0.1) .. 2]
+    u x = sum $ [c_i * basisF i x | (i, c_i) <- enumerate c_vector]
+    enumerate = zip [0 ..]
+    basisF = basisFWithDomain n
+
 main :: IO ()
 main = do
   args <- getArgs
   let n = parseArg args
 
   let b_matrix = fromLists $ generateBMatrix n
-  let l_matrix = (n >< 1) $ generateLMatrix n
-  -- print $ [basisFWithDomain n i 2 | i <- [1 .. 10]]
+  let l_vector = (n >< 1) $ generateLMatrix n
+  let c_vector = head $ toLists $ fromJust $ linearSolve b_matrix l_vector
+
+  print "B matrix"
   print b_matrix
-  print l_matrix
+  print "L vector"
+  print l_vector
+  print "c vector"
+  print c_vector
+
+  toFile def "mychart.svg" $ do
+    layout_title .= "Data"
+    setColors [opaque blue, opaque red]
+    plot (line "" [plotData c_vector n])
 
   putStrLn "Done."

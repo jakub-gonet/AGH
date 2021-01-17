@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Solver
   other-modules:
       Paths_solver
   hs-source-dirs:

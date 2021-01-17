@@ -1,6 +1,6 @@
 module Main where
 
-import Data.Maybe
+import Data.Maybe (fromMaybe)
 import Graphics.Rendering.Chart.Backend.Diagrams (toFile)
 import Graphics.Rendering.Chart.Easy
   ( Default (def),
@@ -13,103 +13,34 @@ import Graphics.Rendering.Chart.Easy
     setColors,
     (.=),
   )
-import Lib (someFunc)
-import Math.GaussianQuadratureIntegration (nIntegrate256)
-import Numeric.LinearAlgebra (flatten, fromLists, linearSolve, luSolve, toList, toLists, (><))
+import Solver (approxU)
 import System.Environment (getArgs)
 import System.Exit ()
+import Text.Read (readMaybe)
 
-integrate :: (Fractional a, Ord a) => (a -> a) -> Bool -> a
-integrate f shouldIntegrate
-  | shouldIntegrate = nIntegrate256 f 0 2
-  | otherwise = 0
-
--- basisF docs
-basisFWithDomain :: (Ord a, Fractional a) => Int -> Int -> a -> a
-basisFWithDomain n i x
-  | x < left || right < x = 0
-  | x <= center = (x - left) * hInverse
-  | otherwise = (right - x) * hInverse
+approxPlot :: Int -> [(Double, Double)]
+approxPlot n = [(x, u x) | x <- [0, 0.1 .. 2]] :: [(Double, Double)]
   where
-    domainEnd = 2
-    left = center - h
-    right = center + h
-    center = domainEnd * fromIntegral i / fromIntegral n
-    h = domainEnd / fromIntegral n
-    hInverse = fromIntegral n / domainEnd
+    u = approxU n
 
-basisF'WithDomain :: (Ord a, Fractional a) => Int -> Int -> a -> a
-basisF'WithDomain n i x
-  | x < left || right < x = 0
-  | x <= center = hInverse
-  | otherwise = - hInverse
+exactPlot :: [(Double, Double)]
+exactPlot = [(x, u x) | x <- [0, 0.1 .. 2]] :: [(Double, Double)]
   where
-    left = center - h
-    right = center + h
-    domainEnd = 2
-    center = domainEnd * fromIntegral i / fromIntegral n
-    h = domainEnd / fromIntegral n
-    hInverse = fromIntegral n / domainEnd
-
-generateBMatrix :: Int -> [[Double]]
-generateBMatrix n =
-  [[b_ei_ej i j | j <- [1 .. n]] | i <- [1 .. n]]
-  where
-    -- B(u,v) = u(2)v(2) - int[0, 2] u'v'dx + int[0, 2] uvdx
-    -- B(e_i, e_j) = e_i(2)*e_j(2) - int[0, 2] e_i'*e_j'dx + int[0, 2] e_i*e_jdx
-    b_ei_ej i j = u2v2 i j + ʃsub_u'v'_add_uvdx i j
-    u2v2 i j = basisF i 2 * basisF j 2
-    ʃsub_u'v'_add_uvdx i j = integrate (\x -> - basisF' i x * basisF' j x + basisF i x * basisF j x) $ near i j
-
-    near i j = abs (i - j) <= 1
-    basisF = basisFWithDomain n
-    basisF' = basisF'WithDomain n
-
-generateLMatrix :: Int -> [Double]
-generateLMatrix n =
-  [l_ej j | j <- [1 .. n]]
-  where
-    -- L(v) = - int[0, 2] v*sindx
-    -- L(e_j) = - int[0, 2] e_j*sindx
-    l_ej j = - integrate (\x -> basisF j x * sin x) (j > 0)
-    basisF = basisFWithDomain n
+    u x = 0.5 * (x * cos x + ((cos 2 + 2 * sin 2) * sin x) / (cos 2 - sin 2))
 
 parseArg :: [String] -> Int
-parseArg [arg] = read arg :: Int
+parseArg [arg] = read arg
 parseArg _ = 5
-
-plotData c_vector n = [(x, u x) | x <- plotPoints] :: [(Double, Double)]
-  where
-    plotPoints = [0, 0.1 .. 2]
-    u x = sum $ [c_i * basisF i x | (i, c_i) <- enumerate c_vector]
-    enumerate = zip [0 ..]
-    basisF = basisFWithDomain n
-
-plotExactData = [(x, u x) | x <- plotPoints] :: [(Double, Double)]
-  where
-    plotPoints = [0, 0.1 .. 2]
-    u x = 0.5 * (x * cos x + ((cos 2 + 2 * sin 2) * sin x) / (cos 2 - sin 2))
 
 main :: IO ()
 main = do
   args <- getArgs
-  let n = parseArg args
-
-  let b_matrix = fromLists $ generateBMatrix n
-  let l_vector = (n >< 1) $ generateLMatrix n
-  let c_vector = 0 : (toList $ flatten (fromJust $ linearSolve b_matrix l_vector))
-
-  print "B matrix"
-  print b_matrix
-  print "L vector"
-  print l_vector
-  print "c vector"
-  print c_vector
+  let n = fromMaybe 5 . readMaybe . head $ args :: Int
 
   toFile def "mychart.svg" $ do
     layout_title .= "Data"
     setColors [opaque blue, opaque red]
-    plot (line "Aproximate solution" [plotData c_vector n])
-    plot (line "Exact solution" [plotExactData])
+    plot (line "Aproximate solution" [approxPlot n])
+    plot (line "Exact solution" [exactPlot])
 
   putStrLn "Done."

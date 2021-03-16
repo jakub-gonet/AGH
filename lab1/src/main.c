@@ -1,15 +1,26 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int main(int argc, char const *argv[]) {
-  for (size_t i = 1; i < argc; ++i) {
+#include "vector.h"
+
+bool try_extracting_file_pair(char **next_token, char **rest);
+
+int main(int argc, char *argv[]) {
+  for (int i = 1; i < argc; ++i) {
     const char *extracted = argv[i];
-    if (!strcmp(extracted, "create_table")) {
-      const unsigned int size = strtol(argv[++i], NULL, 10);
-      printf("create_table %d\n", size);
-    } else if (!strcmp(extracted, "merge_files")) {
-      printf("create_table\n");
+    printf("read: %s\n", extracted);
+    if (!strcmp(extracted, "merge_files")) {
+      printf("merge_files\n");
+      char *next_token = NULL;
+      char **current_s = &argv[++i];
+      while (try_extracting_file_pair(&next_token, current_s)) {
+        printf("first: %s, second: %s\n", next_token, *current_s);
+        current_s = &argv[++i];
+      }
+      argv[i] = next_token;
+      --i;
     } else if (!strcmp(extracted, "remove_block")) {
       const unsigned int index = strtol(argv[++i], NULL, 10);
       printf("remove_block\n");
@@ -18,9 +29,14 @@ int main(int argc, char const *argv[]) {
       const unsigned int row_index = strtol(argv[++i], NULL, 10);
       printf("remove_row %d %d\n", block_index, row_index);
     } else {
-      printf("unrecognized\n");
+      printf("unrecognized: %s\n", extracted);
     }
   }
 
   return 0;
+}
+
+bool try_extracting_file_pair(char **next_token, char **rest) {
+  *next_token = strsep(rest, ":");
+  return *rest != NULL;
 }

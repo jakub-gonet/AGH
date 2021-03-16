@@ -3,11 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "block_manager.h"
 #include "vector.h"
 
 bool try_extracting_file_pair(char **next_token, char **rest);
 
 int main(int argc, char *argv[]) {
+  BM_pairs filename_pairs = NULL;
+
   for (int i = 1; i < argc; ++i) {
     const char *extracted = argv[i];
     printf("read: %s\n", extracted);
@@ -16,7 +19,7 @@ int main(int argc, char *argv[]) {
       char *next_token = NULL;
       char **current_s = &argv[++i];
       while (try_extracting_file_pair(&next_token, current_s)) {
-        printf("first: %s, second: %s\n", next_token, *current_s);
+        BM_add_pair(filename_pairs, next_token, *current_s);
         current_s = &argv[++i];
       }
       argv[i] = next_token;
@@ -33,6 +36,13 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  printf("size: %ld", vec_get_size(filename_pairs));
+  for (size_t i = 0; i < vec_get_size(filename_pairs); i++) {
+    struct BM_filename_pair pair = filename_pairs[i];
+    printf("%ld: %s, %s", i, pair.first, pair.second);
+  }
+
+  BM_free_pairs(filename_pairs);
   return 0;
 }
 

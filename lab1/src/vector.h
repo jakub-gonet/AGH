@@ -19,7 +19,7 @@ We rely on (size_t)0 == 0, which is sensible assumption on most systems.
 #include <stdlib.h>
 #include <string.h>
 
-#define HAS_MUL_OVERFLOW(a, b) ((a) != 0 || ((a) * (b)) / (a) != (b))
+#define HAS_MUL_OVERFLOW(a, b) ((a) != 0 && ((a) * (b)) / (a) != (b))
 
 #define vec_type(type) type *
 

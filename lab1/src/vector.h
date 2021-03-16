@@ -23,7 +23,7 @@ We rely on (size_t)0 == 0, which is sensible assumption on most systems.
 
 #define vec_type(type) type *
 
-#define vec_get_capacity(vec) ((vec) != NULL ? ((size_t *)(vec))[-2] : 0)
+#define vec__get_capacity(vec) ((vec) != NULL ? ((size_t *)(vec))[-2] : 0)
 #define vec_get_size(vec) ((vec) != NULL ? ((size_t *)(vec))[-1] : 0)
 #define vec_is_empty(vec) (vec_get_size((vec)) == 0)
 
@@ -74,7 +74,7 @@ We rely on (size_t)0 == 0, which is sensible assumption on most systems.
 
 #define vec_append(vec, value)                            \
   do {                                                    \
-    const size_t capacity = vec_get_capacity((vec));      \
+    const size_t capacity = vec__get_capacity((vec));     \
     const size_t size = vec_get_size((vec));              \
     /* (re)alocate if needed, initially capacity is 0 */  \
     if (capacity <= size) {                               \

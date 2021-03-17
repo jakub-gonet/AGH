@@ -46,7 +46,7 @@ FILE *BM_merge_pair(const struct BM_filename_pair *const pair) {
 
   // getline will allocate ourselves a buffor
   char *line_buf = NULL;
-  size_t buf_size;
+  size_t buf_size = 0;
   ssize_t line_len_a = -1;
   ssize_t line_len_b = -1;
   do {

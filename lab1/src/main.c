@@ -26,14 +26,7 @@ int main(int argc, char *argv[]) {
       BM_blocks blocks = BM_merge_pairs(filename_pairs);
       BM_free_pairs(filename_pairs);
 
-      for (size_t i = 0; i < vec_get_size(blocks); i++) {
-        printf("%ld row size\n", vec_get_size(blocks[i]));
-        for (size_t j = 0; j < vec_get_size(blocks[i]); j++) {
-          printf("%ld block, %ld row: %s", i, j, blocks[i][j]);
-        }
-        printf("\n");
-      }
-
+      BM_print_blocks(blocks);
       BM_free_blocks(blocks);
       argv[i] = next_token;
       --i;

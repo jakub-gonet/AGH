@@ -11,12 +11,36 @@ void BM_add_pair(BM_pairs *const pairs, const char *const first,
   vec_append(*pairs, new_pair);
 }
 
-BM_blocks BM_merge_pairs(BM_pairs pairs) {
+size_t BM_get_rows_count(const BM_blocks blocks, const size_t index) {
+  return vec_get_size(blocks[index]);
+}
+
+void BM_delete_block(BM_blocks blocks, const size_t index) {
+  BM_free_rows(blocks[index]);
+  vec_remove_at(blocks, index);
+}
+
+void BM_delete_row(BM_rows rows, const size_t index) {
+  BM_free_row(rows[index]);
+  vec_remove_at(rows, index);
+}
+
+void BM_print_blocks(const BM_blocks blocks) {
+  const size_t block_size = vec_get_size(blocks);
+  for (size_t block_i = 0; block_i < block_size; block_i++) {
+    const size_t rows_size = vec_get_size(blocks[block_i]);
+    for (size_t row_i = 0; row_i < rows_size; row_i++) {
+      printf("%s", blocks[block_i][row_i]);
+    }
+    printf("\n");
+  }
+}
+
+BM_blocks BM_merge_pairs(const BM_pairs pairs) {
   BM_blocks blocks = NULL;
   for (size_t i = 0; i < vec_get_size(pairs); i++) {
-    printf("Processing %ld pair\n", i);
     FILE *merged_f = BM_merge_pair(&pairs[i]);
-    const vec_type(char *) file_lines = NULL;
+    BM_rows file_lines = NULL;
 
     char *line_buf = NULL;
     // unused
@@ -72,15 +96,19 @@ FILE *BM_merge_pair(const struct BM_filename_pair *const pair) {
 }
 
 void BM_free_blocks(BM_blocks blocks) {
-  const size_t blocks_number = vec_get_size(blocks);
-  for (size_t block_i = 0; block_i < blocks_number; ++block_i) {
-    const size_t rows_number = vec_get_size(blocks[block_i]);
-    for (size_t row_i = 0; row_i < rows_number; row_i++) {
-      free((void *)blocks[block_i][row_i]);
-    }
-    vec_free(blocks[block_i]);
+  const size_t blocks_size = vec_get_size(blocks);
+  for (size_t i = 0; i < blocks_size; ++i) {
+    BM_free_rows(blocks[i]);
   }
   vec_free(blocks);
 }
 
+void BM_free_rows(BM_rows rows) {
+  const size_t rows_size = vec_get_size(rows);
+  for (size_t i = 0; i < rows_size; i++) {
+    BM_free_row(rows[i]);
+  }
+  vec_free(rows);
+}
+void BM_free_row(BM_row row) { free((void *)row); }
 void BM_free_pairs(BM_pairs pairs) { vec_free(pairs); }

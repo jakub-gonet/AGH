@@ -22,6 +22,7 @@ int main(int argc, char *argv[]) {
         current_s = &argv[++i];
       }
       blocks = BM_merge_pairs(filename_pairs);
+      BM_print_blocks(blocks);
       BM_free_pairs(filename_pairs);
 
       argv[i] = next_token;

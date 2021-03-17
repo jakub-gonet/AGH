@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <bm/block_manager.h>
 #include <bm/vector.h>
 #include <stdbool.h>
@@ -5,9 +6,51 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef DYNAMIC
+#include <dlfcn.h>
+#endif
+
+#define LIST_BM_FUNCTIONS(TRANSFORM_SIGNATURE)                               \
+  TRANSFORM_SIGNATURE(void, BM_add_pair, BM_pairs *const pairs,              \
+                      const char *const first, const char *const second)     \
+  TRANSFORM_SIGNATURE(FILE *, BM_merge_pair,                                 \
+                      const struct BM_filename_pair *const pair)             \
+  TRANSFORM_SIGNATURE(BM_blocks, BM_merge_pairs, const BM_pairs pairs)       \
+  TRANSFORM_SIGNATURE(void, BM_delete_block, BM_blocks blocks,               \
+                      const size_t index)                                    \
+  TRANSFORM_SIGNATURE(void, BM_delete_row, BM_rows rows, const size_t index) \
+  TRANSFORM_SIGNATURE(size_t, BM_get_rows_count, const BM_blocks blocks,     \
+                      const size_t index)                                    \
+  TRANSFORM_SIGNATURE(void, BM_print_blocks, const BM_blocks blocks)         \
+  TRANSFORM_SIGNATURE(void, BM_free_blocks, BM_blocks blocks)                \
+  TRANSFORM_SIGNATURE(void, BM_free_rows, BM_rows rows)                      \
+  TRANSFORM_SIGNATURE(void, BM_free_row, BM_row row)                         \
+  TRANSFORM_SIGNATURE(void, BM_free_pairs, BM_pairs pair)
+
+// global handles for functions passed as args, const ptr for shared/static,
+// plain for dynamic - will be reassigned in main
+#ifdef DYNAMIC
+#define FPTR_DECL(ret, f_name, ...) ret (*fptr_##f_name)(__VA_ARGS__);
+#else
+#define FPTR_DECL(ret, f_name, ...) \
+  ret (*const fptr_##f_name)(__VA_ARGS__) = f_name;
+#endif
+
+LIST_BM_FUNCTIONS(FPTR_DECL);
+
+#undef DEF_FPTR
+
 bool try_extracting_file_pair(char **next_token, char **rest);
 
 int main(int argc, char *argv[]) {
+#ifdef DYNAMIC
+  void *dl_handle = dlopen("libblock_manager.so", RTLD_LAZY);
+  assert(dl_handle != NULL);
+#define FPTR_INIT(ret, name, ...) fptr_##name = dlsym(dl_handle, #name);
+  LIST_BM_FUNCTIONS(FPTR_INIT)
+#undef FPTR_INIT
+#endif
+
   BM_pairs filename_pairs = NULL;
   BM_blocks blocks = NULL;
 
@@ -18,27 +61,30 @@ int main(int argc, char *argv[]) {
       char **current_s = &argv[++i];
       while (try_extracting_file_pair(&next_token, current_s)) {
         // *move* ptrs to pairs
-        BM_add_pair(&filename_pairs, next_token, *current_s);
+        fptr_BM_add_pair(&filename_pairs, next_token, *current_s);
         current_s = &argv[++i];
       }
-      blocks = BM_merge_pairs(filename_pairs);
-      BM_print_blocks(blocks);
-      BM_free_pairs(filename_pairs);
+      blocks = fptr_BM_merge_pairs(filename_pairs);
+      fptr_BM_print_blocks(blocks);
+      fptr_BM_free_pairs(filename_pairs);
 
       argv[i] = next_token;
       --i;
     } else if (!strcmp(extracted, "remove_block")) {
       const unsigned int index = strtol(argv[++i], NULL, 10);
-      BM_delete_block(blocks, index);
+      fptr_BM_delete_block(blocks, index);
     } else if (!strcmp(extracted, "remove_row")) {
       const unsigned int block_index = strtol(argv[++i], NULL, 10);
       const unsigned int row_index = strtol(argv[++i], NULL, 10);
-      BM_delete_row(blocks[block_index], row_index);
+      fptr_BM_delete_row(blocks[block_index], row_index);
     } else {
       printf("unrecognized: %s\n", extracted);
     }
 
-    BM_free_blocks(blocks);
+    fptr_BM_free_blocks(blocks);
+#ifdef DYNAMIC
+    dlclose(dl_handle);
+#endif
   }
 
   return 0;

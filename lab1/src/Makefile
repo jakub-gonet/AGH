@@ -9,7 +9,7 @@ MERGE_FILES_CMD := merge_files ../test_files/a.txt:../test_files/b.txt ../test_f
 
 .PHONY: directories all install clean test $(LIB_DIR)/libblock_manager.a $(LIB_DIR)/libblock_manager.so
 
-all: directories $(OUT_DIR)/$(NAME)_static_$(OPT) $(OUT_DIR)/$(NAME)_shared_$(OPT)
+all: directories $(OUT_DIR)/$(NAME)_static_$(OPT) $(OUT_DIR)/$(NAME)_shared_$(OPT) $(OUT_DIR)/$(NAME)_dynamic_$(OPT)
 
 install: $(LIB_DIR)/libblock_manager.so
 	$(MAKE) -C $(LIB_DIR) install
@@ -20,7 +20,7 @@ $(OUT_DIR)/$(NAME)_static_$(OPT): $(NAME).c $(LIB_DIR)/libblock_manager.a
 $(OUT_DIR)/$(NAME)_shared_$(OPT): $(NAME).c $(LIB_DIR)/libblock_manager.so
 	$(CC) $(CFLAGS) -$(OPT) $(NAME).c -l block_manager -o $(OUT_DIR)/$(NAME)_shared_$(OPT)
 
-$(OUT_DIR)/$(NAME)_dynamic_$(OPT): $(NAME).c
+$(OUT_DIR)/$(NAME)_dynamic_$(OPT): $(NAME).c $(LIB_DIR)/libblock_manager.so
 	$(CC) $(CFLAGS) -$(OPT) $(NAME).c -l dl -DDYNAMIC -o $(OUT_DIR)/$(NAME)_dynamic_$(OPT)
 
 $(LIB_DIR)/libblock_manager.a:

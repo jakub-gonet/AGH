@@ -7,9 +7,9 @@ DIST   := /usr
 all: libblock_manager.a libblock_manager.so
 
 install: libblock_manager.so block_manager.h vector.h
-	mkdir -p $(DIST)/include $(DIST)/lib
-	cp block_manager.h $(DIST)/include/block_manager.h
-	cp vector.h $(DIST)/include/vector.h
+	mkdir -p $(DIST)/include/bm $(DIST)/lib/bm
+	cp block_manager.h $(DIST)/include/bm/block_manager.h
+	cp vector.h $(DIST)/include/bm/vector.h
 	cp libblock_manager.so $(DIST)/lib/libblock_manager.so
 
 uninstall:
@@ -24,7 +24,7 @@ block_manager.o: block_manager.c block_manager.h
 	$(CC) $(CFLAGS) block_manager.c -c -o block_manager.o
 
 libblock_manager.so: block_manager.c block_manager.h
-	$(CC) $(CFLAGS) block_manager.c -fPIC -shared -o block_manager.so
+	$(CC) $(CFLAGS) block_manager.c -fPIC -shared -o libblock_manager.so
 
 clean:
 	$(RM) *.a *.o *.so

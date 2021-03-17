@@ -24,6 +24,8 @@ int main(int argc, char *argv[]) {
         current_s = &argv[++i];
       }
       BM_blocks blocks = BM_merge_pairs(filename_pairs);
+      BM_free_pairs(filename_pairs);
+
       for (size_t i = 0; i < vec_get_size(blocks); i++) {
         printf("%ld row size\n", vec_get_size(blocks[i]));
         for (size_t j = 0; j < vec_get_size(blocks[i]); j++) {
@@ -33,7 +35,6 @@ int main(int argc, char *argv[]) {
       }
 
       BM_free_blocks(blocks);
-
       argv[i] = next_token;
       --i;
     } else if (!strcmp(extracted, "remove_block")) {
@@ -48,7 +49,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  BM_free_pairs(filename_pairs);
   return 0;
 }
 

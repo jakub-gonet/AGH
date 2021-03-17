@@ -30,6 +30,7 @@ BM_blocks BM_merge_pairs(BM_pairs pairs) {
     }
     // last one needs to be freed
     free(line_buf);
+    fclose(merged_f);
     vec_append(blocks, file_lines);
   }
   return blocks;
@@ -61,6 +62,9 @@ FILE *BM_merge_pair(const struct BM_filename_pair *const pair) {
     }
   } while (line_len_a != -1 || line_len_b != -1);
 
+  fclose(file_a);
+  fclose(file_b);
+
   free(line_buf);
 
   rewind(tmp_file);
@@ -68,9 +72,13 @@ FILE *BM_merge_pair(const struct BM_filename_pair *const pair) {
 }
 
 void BM_free_blocks(BM_blocks blocks) {
-  const size_t size = vec_get_size(blocks);
-  for (size_t i = 0; i < size; ++i) {
-    vec_free(blocks[i]);
+  const size_t blocks_number = vec_get_size(blocks);
+  for (size_t block_i = 0; block_i < blocks_number; ++block_i) {
+    const size_t rows_number = vec_get_size(blocks[block_i]);
+    for (size_t row_i = 0; row_i < rows_number; row_i++) {
+      free((void *)blocks[block_i][row_i]);
+    }
+    vec_free(blocks[block_i]);
   }
   vec_free(blocks);
 }

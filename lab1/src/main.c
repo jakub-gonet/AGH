@@ -23,6 +23,17 @@ int main(int argc, char *argv[]) {
         BM_add_pair(&filename_pairs, next_token, *current_s);
         current_s = &argv[++i];
       }
+      BM_blocks blocks = BM_merge_pairs(filename_pairs);
+      for (size_t i = 0; i < vec_get_size(blocks); i++) {
+        printf("%ld row size\n", vec_get_size(blocks[i]));
+        for (size_t j = 0; j < vec_get_size(blocks[i]); j++) {
+          printf("%ld block, %ld row: %s", i, j, blocks[i][j]);
+        }
+        printf("\n");
+      }
+
+      BM_free_blocks(blocks);
+
       argv[i] = next_token;
       --i;
     } else if (!strcmp(extracted, "remove_block")) {
@@ -35,12 +46,6 @@ int main(int argc, char *argv[]) {
     } else {
       printf("unrecognized: %s\n", extracted);
     }
-  }
-
-  printf("size: %ld", vec_get_size(filename_pairs));
-  for (size_t i = 0; i < vec_get_size(filename_pairs); i++) {
-    struct BM_filename_pair pair = filename_pairs[i];
-    printf("%ld: %s, %s", i, pair.first, pair.second);
   }
 
   BM_free_pairs(filename_pairs);

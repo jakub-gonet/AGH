@@ -6,7 +6,7 @@ DIST   := /usr
 
 all: libblock_manager.a libblock_manager.so
 
-install: libblock_manager.so block_manager.h vector.h
+install: libblock_manager.so
 	mkdir -p $(DIST)/include/bm $(DIST)/lib/bm
 	cp block_manager.h $(DIST)/include/bm/block_manager.h
 	cp vector.h $(DIST)/include/bm/vector.h
@@ -17,13 +17,13 @@ uninstall:
 	$(RM) $(DIST)/include/rrmerge_ptr_vector.h
 	$(RM) $(DIST)/lib/libblock_manager.so
 
-libblock_manager.a: block_manager.o
+libblock_manager.a: block_manager.o vector.h
 	$(AR) $(ARFLAGS) libblock_manager.a block_manager.o
 
-block_manager.o: block_manager.c block_manager.h
+block_manager.o: block_manager.c block_manager.h vector.h
 	$(CC) $(CFLAGS) block_manager.c -c -o block_manager.o
 
-libblock_manager.so: block_manager.c block_manager.h
+libblock_manager.so: block_manager.c block_manager.h vector.h
 	$(CC) $(CFLAGS) block_manager.c -fPIC -shared -o libblock_manager.so
 
 clean:

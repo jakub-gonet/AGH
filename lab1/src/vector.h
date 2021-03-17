@@ -53,7 +53,7 @@ We rely on (size_t)0 == 0, which is sensible assumption on most systems.
     assert(!HAS_MUL_OVERFLOW((new_capacity), sizeof(*(vec))));              \
     const size_t vec_size_with_metadata =                                   \
         (new_capacity) * sizeof(*(vec)) + sizeof(size_t) * 2;               \
-    if (vec == NULL) {                                                      \
+    if ((vec) == NULL) {                                                    \
       size_t *vec_ptr = malloc(vec_size_with_metadata);                     \
       assert(vec_ptr != NULL);                                              \
       /* Prepare pointer for handing it to user, void cast to a_void_       \

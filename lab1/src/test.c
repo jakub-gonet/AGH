@@ -31,21 +31,21 @@
     printf("%ld %ld %ld\n", real_elapsed, user_elapsed, system_elapsed); \
   } while (0);
 
-#define LIST_BM_FUNCTIONS(TRANSFORM_SIGNATURE)                               \
-  TRANSFORM_SIGNATURE(void, BM_add_pair, BM_pairs *const pairs,              \
-                      const char *const first, const char *const second)     \
-  TRANSFORM_SIGNATURE(FILE *, BM_merge_pair,                                 \
-                      const struct BM_filename_pair *const pair)             \
-  TRANSFORM_SIGNATURE(BM_blocks, BM_merge_pairs, const BM_pairs pairs)       \
-  TRANSFORM_SIGNATURE(void, BM_delete_block, BM_blocks blocks,               \
-                      const size_t index)                                    \
-  TRANSFORM_SIGNATURE(void, BM_delete_row, BM_rows rows, const size_t index) \
-  TRANSFORM_SIGNATURE(size_t, BM_get_rows_count, const BM_blocks blocks,     \
-                      const size_t index)                                    \
-  TRANSFORM_SIGNATURE(void, BM_print_blocks, const BM_blocks blocks)         \
-  TRANSFORM_SIGNATURE(void, BM_free_blocks, BM_blocks blocks)                \
-  TRANSFORM_SIGNATURE(void, BM_free_rows, BM_rows rows)                      \
-  TRANSFORM_SIGNATURE(void, BM_free_row, BM_row row)                         \
+#define LIST_BM_FUNCTIONS(TRANSFORM_SIGNATURE)                                 \
+  TRANSFORM_SIGNATURE(void, BM_add_pair, BM_pairs *const pairs,                \
+                      const char *const first, const char *const second)       \
+  TRANSFORM_SIGNATURE(FILE *, BM_merge_pair,                                   \
+                      const struct BM_filename_pair *const pair)               \
+  TRANSFORM_SIGNATURE(BM_blocks, BM_merge_pairs, const BM_pairs pairs)         \
+  TRANSFORM_SIGNATURE(void, BM_delete_block, BM_blocks blocks,                 \
+                      const size_t index)                                      \
+  TRANSFORM_SIGNATURE(void, BM_delete_row, BM_block block, const size_t index) \
+  TRANSFORM_SIGNATURE(size_t, BM_get_rows_count, const BM_blocks blocks,       \
+                      const size_t index)                                      \
+  TRANSFORM_SIGNATURE(void, BM_print_blocks, const BM_blocks blocks)           \
+  TRANSFORM_SIGNATURE(void, BM_free_blocks, BM_blocks blocks)                  \
+  TRANSFORM_SIGNATURE(void, BM_free_block, BM_block block)                     \
+  TRANSFORM_SIGNATURE(void, BM_free_row, BM_row row)                           \
   TRANSFORM_SIGNATURE(void, BM_free_pairs, BM_pairs pair)
 
 // global handles for functions passed as args, const ptr for shared/static,

@@ -16,11 +16,11 @@ size_t BM_get_rows_count(const BM_blocks blocks, const size_t index) {
 }
 
 void BM_delete_block(BM_blocks blocks, const size_t index) {
-  BM_free_rows(blocks[index]);
+  BM_free_block(blocks[index]);
   vec_remove_at(blocks, index);
 }
 
-void BM_delete_row(BM_rows rows, const size_t index) {
+void BM_delete_row(BM_block rows, const size_t index) {
   BM_free_row(rows[index]);
   vec_remove_at(rows, index);
 }
@@ -40,7 +40,7 @@ BM_blocks BM_merge_pairs(const BM_pairs pairs) {
   BM_blocks blocks = NULL;
   for (size_t i = 0; i < vec_get_size(pairs); i++) {
     FILE *merged_f = BM_merge_pair(&pairs[i]);
-    BM_rows file_lines = NULL;
+    BM_block file_lines = NULL;
 
     char *line_buf = NULL;
     // unused
@@ -98,17 +98,17 @@ FILE *BM_merge_pair(const struct BM_filename_pair *const pair) {
 void BM_free_blocks(BM_blocks blocks) {
   const size_t blocks_size = vec_get_size(blocks);
   for (size_t i = 0; i < blocks_size; ++i) {
-    BM_free_rows(blocks[i]);
+    BM_free_block(blocks[i]);
   }
   vec_free(blocks);
 }
 
-void BM_free_rows(BM_rows rows) {
-  const size_t rows_size = vec_get_size(rows);
-  for (size_t i = 0; i < rows_size; i++) {
-    BM_free_row(rows[i]);
+void BM_free_block(BM_block block) {
+  const size_t rows_size = vec_get_size(block);
+  for (size_t i = 0; i < rows_size; ++i) {
+    BM_free_row(block[i]);
   }
-  vec_free(rows);
+  vec_free(block);
 }
 void BM_free_row(BM_row row) { free((void *)row); }
 void BM_free_pairs(BM_pairs pairs) { vec_free(pairs); }

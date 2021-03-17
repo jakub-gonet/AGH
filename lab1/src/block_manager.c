@@ -20,12 +20,13 @@ BM_blocks BM_merge_pairs(BM_pairs pairs) {
 
     char *line_buf = NULL;
     // unused
-    size_t buf_size;
-    ssize_t line_len = -1;
+    size_t buf_size = 0;
+    ssize_t line_len = 0;
     while ((line_len = getline(&line_buf, &buf_size, merged_f)) != -1) {
       vec_append(file_lines, line_buf);
       // make getline allocate a new buffer
       line_buf = NULL;
+      buf_size = 0;
     }
     // last one needs to be freed
     free(line_buf);

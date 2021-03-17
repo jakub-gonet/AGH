@@ -19,7 +19,8 @@ int main(int argc, char *argv[]) {
       char *next_token = NULL;
       char **current_s = &argv[++i];
       while (try_extracting_file_pair(&next_token, current_s)) {
-        BM_add_pair(filename_pairs, next_token, *current_s);
+        // *move* ptrs to pairs
+        BM_add_pair(&filename_pairs, next_token, *current_s);
         current_s = &argv[++i];
       }
       argv[i] = next_token;

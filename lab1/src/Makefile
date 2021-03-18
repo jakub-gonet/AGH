@@ -1,13 +1,16 @@
-NAME    := test
-CC      := gcc
-CFLAGS  := -Wall -Wextra -g
-OPT     ?= O2
-OUT_DIR := ./bin
-LIB_DIR := ../lib
+NAME           := test
+CC             := gcc
+CFLAGS         := -Wall -Wextra -g
+OPT            ?= O2
+OUT_DIR        := ./bin
+LIB_DIR        := ../lib
+TEST_FILES_DIR := ../test_files
 
-MERGE_FILES_CMD := merge_files ../test_files/400k_8col.txt:../test_files/400k_256col.txt \
-					../test_files/10M_wiet.txt:../test_files/10M_xd.txt \
-					../test_files/4M_128col.txt:../test_files/4M_256col.txt \
+SMALL_FILES := $(TEST_FILES_DIR)/400k_8col.txt:$(TEST_FILES_DIR)/400k_256col.txt
+MEDIUM_FILES := $(TEST_FILES_DIR)/10M_b.txt:$(TEST_FILES_DIR)/10M_a.txt \
+				$(TEST_FILES_DIR)/4M_128col.txt:$(TEST_FILES_DIR)/4M_256col.txt
+
+MERGE_FILES_CMD := merge_files $(SMALL_FILES) $(MEDIUM_FILES)
 
 .PHONY: directories all install uninstall clean test $(LIB_DIR)/libblock_manager.a $(LIB_DIR)/libblock_manager.so
 
@@ -34,18 +37,34 @@ $(LIB_DIR)/libblock_manager.a:
 $(LIB_DIR)/libblock_manager.so:
 	$(MAKE) -C $(LIB_DIR) libblock_manager.so
 
-test: all install
+test: all install gen_test_files
 	rm -f results.txt
-	@echo 'test static library'
+	@echo 'test static library' | tee -a results.txt
 	$(OUT_DIR)/$(NAME)_static_$(OPT) $(MERGE_FILES_CMD) >> results.txt
-	@echo 'test shared library'
+	@echo >> results.txt
+
+	@echo 'test shared library'  | tee -a results.txt
 	$(OUT_DIR)/$(NAME)_shared_$(OPT) $(MERGE_FILES_CMD) >> results.txt
-	@echo 'test dynamic loaded library'
+	@echo >> results.txt
+
+	@echo 'test dynamic loaded library' | tee -a results.txt
 	$(OUT_DIR)/$(NAME)_dynamic_$(OPT) $(MERGE_FILES_CMD) >> results.txt
 
 directories:
 	mkdir -p $(OUT_DIR)
+	mkdir -p $(TEST_FILES_DIR)
+
+gen_test_files:
+	base64 -w 128 /dev/urandom | head -c 4000000 > $(TEST_FILES_DIR)/4M_128col.txt
+	base64 -w 128 /dev/urandom | head -c 4000000 > $(TEST_FILES_DIR)/4M_256col.txt
+
+	base64 -w 128 /dev/urandom | head -c 400000 > $(TEST_FILES_DIR)/400k_8col.txt
+	base64 -w 128 /dev/urandom | head -c 400000 > $(TEST_FILES_DIR)/400k_256col.txt
+
+	yes a | head -c 10000000 > $(TEST_FILES_DIR)/10M_a.txt
+	yes b | head -c 10000000 > $(TEST_FILES_DIR)/10M_b.txt
 
 clean:
 	$(RM) -r $(OUT_DIR)
+	$(RM) -r $(TEST_FILES_DIR)
 	$(MAKE) -C $(LIB_DIR) clean

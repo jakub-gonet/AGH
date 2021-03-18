@@ -106,8 +106,8 @@ void BM_free_blocks(BM_blocks blocks) {
 }
 
 void BM_free_block(BM_block block) {
-  const size_t rows_size = vec_get_size(block);
-  for (size_t i = 0; i < rows_size; ++i) {
+  const size_t block_size = vec_get_size(block);
+  for (size_t i = 0; i < block_size; ++i) {
     BM_delete_row(block, i);
   }
   vec_free(block);

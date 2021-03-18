@@ -1,0 +1,3 @@
+Seems like shared is fastest, then static, then dynamic which is counterintuitive:
+static library should generate jumps inside a binary and this should be very fast,
+so I'm inclined to think that those results were tested on dataset that was too small.

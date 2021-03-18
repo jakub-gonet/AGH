@@ -48,3 +48,4 @@ directories:
 
 clean:
 	$(RM) -r $(OUT_DIR)
+	$(MAKE) -C $(LIB_DIR) clean

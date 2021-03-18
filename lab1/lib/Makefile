@@ -28,3 +28,4 @@ libblock_manager.so: block_manager.c block_manager.h vector.h
 
 clean:
 	$(RM) *.a *.o *.so
+	$(MAKE) uninstall

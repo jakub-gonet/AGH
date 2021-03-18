@@ -104,9 +104,8 @@ int main(int argc, char *argv[]) {
     } else {
       printf("unrecognized: %s\n", extracted);
     }
-
-    fptr_BM_free_blocks(blocks);
   }
+  fptr_BM_free_blocks(blocks);
 
 #ifdef DYNAMIC
   dlclose(dl_handle);

@@ -22,7 +22,7 @@ uninstall:
 $(OUT_DIR)/$(NAME)_static_$(OPT): $(NAME).c $(LIB_DIR)/libblock_manager.a
 	$(CC) $(CFLAGS) -$(OPT) -static $(NAME).c -L $(LIB_DIR)/ -l block_manager -o $(OUT_DIR)/$(NAME)_static_$(OPT)
 
-$(OUT_DIR)/$(NAME)_shared_$(OPT): $(NAME).c $(LIB_DIR)/libblock_manager.so
+$(OUT_DIR)/$(NAME)_shared_$(OPT): $(NAME).c $(LIB_DIR)/libblock_manager.so install
 	$(CC) $(CFLAGS) -$(OPT) $(NAME).c -l block_manager -o $(OUT_DIR)/$(NAME)_shared_$(OPT)
 
 $(OUT_DIR)/$(NAME)_dynamic_$(OPT): $(NAME).c $(LIB_DIR)/libblock_manager.so

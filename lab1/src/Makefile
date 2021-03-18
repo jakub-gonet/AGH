@@ -13,7 +13,7 @@ MEDIUM_FILES := $(TEST_FILES_DIR)/10M_b.txt:$(TEST_FILES_DIR)/10M_a.txt \
 MERGE_FILES_CMD   := merge_files $(SMALL_FILES) $(MEDIUM_FILES)
 REMOVE_BLOCKS_CMD := remove_block 0 remove_block 1
 REMOVE_ROWS_CMD   := remove_row 2 14 remove_row 2 21 remove_row 2 36
-TEST_CMD          := $(MERGE_FILES_CMD) $(REMOVE_BLOCKS_CMD) $(REMOVE_ROWS_CMD) $(MERGE_FILES_CMD)
+TEST_CMD          := $(MERGE_FILES_CMD) $(REMOVE_BLOCKS_CMD) $(REMOVE_ROWS_CMD)
 
 .PHONY: directories all install uninstall clean test $(LIB_DIR)/libblock_manager.a $(LIB_DIR)/libblock_manager.so
 

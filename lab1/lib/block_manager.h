@@ -18,7 +18,7 @@ typedef vec_type(struct BM_filename_pair) BM_pairs;
 void BM_add_pair(BM_pairs* const pairs, const char* const first,
                  const char* const second);
 FILE* BM_merge_pair(const struct BM_filename_pair* const pair);
-BM_blocks BM_merge_pairs(const BM_pairs pairs);
+void BM_merge_pairs(BM_blocks* blocks, const BM_pairs pairs);
 
 void BM_delete_block(BM_block* block);
 void BM_delete_row(BM_row* row);

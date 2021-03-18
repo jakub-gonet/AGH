@@ -36,8 +36,7 @@ void BM_print_blocks(const BM_blocks blocks) {
   }
 }
 
-BM_blocks BM_merge_pairs(const BM_pairs pairs) {
-  BM_blocks blocks = NULL;
+void BM_merge_pairs(BM_blocks *blocks, const BM_pairs pairs) {
   for (size_t i = 0; i < vec_get_size(pairs); i++) {
     FILE *merged_f = BM_merge_pair(&pairs[i]);
     BM_block file_lines = NULL;
@@ -56,9 +55,8 @@ BM_blocks BM_merge_pairs(const BM_pairs pairs) {
     free(line_buf);
 
     fclose(merged_f);
-    vec_append(blocks, file_lines);
+    vec_append(*blocks, file_lines);
   }
-  return blocks;
 }
 
 FILE *BM_merge_pair(const struct BM_filename_pair *const pair) {

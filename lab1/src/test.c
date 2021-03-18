@@ -48,7 +48,7 @@
   TRANSFORM_SIGNATURE(void, BM_free_blocks, BM_blocks blocks)            \
   TRANSFORM_SIGNATURE(void, BM_free_block, BM_block block)               \
   TRANSFORM_SIGNATURE(void, BM_free_row, BM_row row)                     \
-  TRANSFORM_SIGNATURE(void, BM_free_pairs, BM_pairs pair)
+  TRANSFORM_SIGNATURE(void, BM_free_pairs, BM_pairs pairs)
 
 // global handles for functions passed as args, const ptr for shared/static,
 // plain for dynamic - will be reassigned in main

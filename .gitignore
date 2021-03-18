@@ -4,3 +4,4 @@
 *.so
 bin/
 .vscode/
+test_files

@@ -117,7 +117,7 @@ We rely on (size_t)0 == 0, which is sensible assumption on most systems.
     if ((vec) != NULL) {                        \
       size_t *vec_ptr = &((size_t *)(vec))[-2]; \
       free(vec_ptr);                            \
-      vec_ptr = NULL;                           \
+      vec = NULL;                               \
     }                                           \
   } while (0)
 

@@ -57,7 +57,7 @@ directories:
 	mkdir -p $(OUT_DIR)
 	mkdir -p $(TEST_FILES_DIR)
 
-gen_test_files:
+gen_test_files: directories
 	base64 -w 128 /dev/urandom | head -c 4000000 > $(TEST_FILES_DIR)/4M_128col.txt
 	base64 -w 128 /dev/urandom | head -c 4000000 > $(TEST_FILES_DIR)/4M_256col.txt
 

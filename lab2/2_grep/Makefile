@@ -15,9 +15,9 @@ sys: 2_grep.c
 run_test: sys lib test/a.txt
 	$(RM) results.txt
 	@echo -n == lib == >> results.txt
-	{ time ./sys @ test/b.txt ; } 2>> results.txt 1>/dev/null
-	@echo -ne "\n== sys ==" >> results.txt
 	{ time ./lib @ test/b.txt ; } 2>> results.txt 1>/dev/null
+	@echo -ne "\n== sys ==" >> results.txt
+	{ time ./sys @ test/b.txt ; } 2>> results.txt 1>/dev/null
 
 clean:
 	$(RM) sys lib results.txt

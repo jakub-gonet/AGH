@@ -13,6 +13,7 @@
 #define FILE_ERR NULL
 #define OPEN_FILE_R(path) fopen(path, "r")
 #define OPEN_FILE_W(path) fopen(path, "w")
+#define OPEN_FILE_APP(path) fopen(path, "w")
 #define CLOSE_FILE(file) fclose(file)
 #define READ_FILE(file, in_buffer, length) \
   fread(in_buffer, sizeof(char), length, file)
@@ -26,7 +27,8 @@
 #define FILE_HANDLE int
 #define FILE_ERR -1
 #define OPEN_FILE_R(path) open(path, O_RDONLY)
-#define OPEN_FILE_W(path) open(path, O_WRONLY)
+#define OPEN_FILE_W(path) open(path, O_WRONLY | O_CREAT)
+#define OPEN_FILE_APP(path) open(path, O_WRONLY | O_APPEND | O_CREAT)
 #define CLOSE_FILE(fd) close(fd)
 #define READ_FILE(fd, in_buffer, length) read(fd, in_buffer, length)
 #define WRITE_FILE(fd, out_buffer, length) write(fd, out_buffer, length)

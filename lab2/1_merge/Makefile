@@ -24,7 +24,7 @@ test/b64_b.txt: dirs
 run_test: sys lib test/b64_a.txt test/b64_b.txt
 	$(RM) results.txt
 	@echo -n == lib == >> results.txt
-	{ time ./sys test/b64_a.txt test/b64_b.txt ; } 2>> results.txt 1>/dev/null
+	{ time ./lib test/b64_a.txt test/b64_b.txt ; } 2>> results.txt 1>/dev/null
 	@echo -ne "\n== sys ==" >> results.txt
 	{ time ./sys test/b64_a.txt test/b64_b.txt ; } 2>> results.txt 1>/dev/null
 

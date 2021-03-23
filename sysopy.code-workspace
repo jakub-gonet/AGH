@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"C_Cpp.clang_format_style": "Chromium",
+		"files.associations": {
+			"assert.h": "c",
+			"stdbool.h": "c"
+		}
+	}
+}

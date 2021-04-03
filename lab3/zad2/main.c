@@ -40,36 +40,32 @@ int main(int argc, char* argv[]) {
   int i = 0;
   char* next_token = NULL;
   char** current_s = &argv[++i];
-  // MEASURE(
-  //     "parse & allocate",
-  while (try_extracting_file_pair(&next_token, current_s)) {
-    // *move* ptrs to pairs
-    BM_add_pair(&filename_pairs, next_token, *current_s);
-    current_s = &argv[++i];
-  }
-  const size_t filename_pairs_size = vec_get_size(filename_pairs);
-  for (size_t i = 0; i < filename_pairs_size; i++) {
-    vec_append(merged, NULL);
-  }
-  for (size_t i = 0; i < filename_pairs_size; i++) {
-    const pid_t pid = fork();
-    if (pid == 0) {
-      merged[i] = BM_merge_pair(&filename_pairs[i]);
-      return 0;
-    }
-  }
+  MEASURE(
+      "parse & allocate",
+      while (try_extracting_file_pair(&next_token, current_s)) {
+        // *move* ptrs to pairs
+        BM_add_pair(&filename_pairs, next_token, *current_s);
+        current_s = &argv[++i];
+      } const size_t filename_pairs_size = vec_get_size(filename_pairs);
+      for (size_t i = 0; i < filename_pairs_size; i++) {
+        vec_append(merged, NULL);
+      } for (size_t i = 0; i < filename_pairs_size; i++) {
+        const pid_t pid = fork();
+        if (pid == 0) {
+          merged[i] = BM_merge_pair(&filename_pairs[i]);
+          return 0;
+        }
+      }
 
-  while (wait(NULL) > 0)
-    ;
-  // )
-  BM_free_pairs(filename_pairs);
+      while (wait(NULL) > 0);)
 
-  for (size_t i = 0; i < filename_pairs_size; i++) {
+  for (size_t i = 0; i < vec_get_size(filename_pairs); i++) {
     if (merged[i] != NULL) {
       fclose(merged[i]);
     }
   }
   vec_free(merged);
+  BM_free_pairs(filename_pairs);
 
   return 0;
 }

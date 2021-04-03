@@ -1,0 +1,9 @@
+== sys ==
+real	1m4.220s
+user	0m0.068s
+sys	0m1.127s
+
+== lib ==
+real	0m0.407s
+user	0m0.006s
+sys	0m0.009s

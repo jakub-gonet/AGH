@@ -31,6 +31,7 @@ bool is_directory(const struct dirent* dir_entry);
 bool is_curr_or_parent_dir(const struct dirent* dir_entry);
 bool contains_pattern(const char* filepath, const char* pattern);
 void remove_prefix(const int prefix_len, char* buffer);
+void get_path_to(const char* file, char* buf, const size_t buf_size);
 
 void walk(const char* startpath,
           const char* path,
@@ -47,8 +48,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   char cwd[PATH_MAX];
-  getcwd(cwd, sizeof(cwd));
-  strcat(cwd, "/");
+  get_path_to("", cwd, sizeof(cwd));
 
   const char* pattern = argv[2];
   errno = 0;
@@ -88,9 +88,7 @@ void walk(const char* startpath,
       }
     } else if (is_text_file(dir) && contains_pattern(dir->d_name, pattern)) {
       char cwd[PATH_MAX];
-      getcwd(cwd, sizeof(cwd));
-      strcat(cwd, "/");
-      strcat(cwd, dir->d_name);
+      get_path_to(dir->d_name, cwd, sizeof(cwd));
       remove_prefix(strlen(startpath), cwd);
 
       printf("[%d] Found pattern in file: %s\n", getpid(), cwd);
@@ -131,4 +129,10 @@ bool contains_pattern(const char* filepath, const char* pattern) {
 
 void remove_prefix(const int prefix_len, char* buffer) {
   memmove(buffer, buffer + prefix_len, strlen(buffer) + 1 - prefix_len);
+}
+
+void get_path_to(const char* file, char* buf, const size_t buf_size) {
+  getcwd(buf, buf_size);
+  strcat(buf, "/");
+  strcat(buf, file);
 }

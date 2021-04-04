@@ -30,26 +30,39 @@ bool is_text_file(const struct dirent* dir_entry);
 bool is_directory(const struct dirent* dir_entry);
 bool is_curr_or_parent_dir(const struct dirent* dir_entry);
 bool contains_pattern(const char* filepath, const char* pattern);
+void remove_prefix(const int prefix_len, char* buffer);
 
-void walk(const char* path, const char* pattern, const int depth);
+void walk(const char* startpath,
+          const char* path,
+          const char* pattern,
+          const int depth);
 
 int main(int argc, char* argv[]) {
   assert(argc == 3 + 1);
   char* end;
 
   char* search_dir = argv[1];
+  chdir(search_dir);
+  if (errno != 0) {
+    return 1;
+  }
+  char cwd[PATH_MAX];
+  getcwd(cwd, sizeof(cwd));
+  strcat(cwd, "/");
+
   const char* pattern = argv[2];
   errno = 0;
   const long depth = strtol(argv[3], &end, 10);
   assert(errno == 0);
-
-  walk(search_dir, pattern, depth);
+  walk(cwd, ".", pattern, depth);
 
   return 0;
 }
 
-void walk(const char* path, const char* pattern, const int depth) {
-  printf("walk: %s, %s, %d\n", path, pattern, depth);
+void walk(const char* startpath,
+          const char* path,
+          const char* pattern,
+          const int depth) {
   if (depth == -1) {
     return;
   }
@@ -70,11 +83,17 @@ void walk(const char* path, const char* pattern, const int depth) {
     if (is_directory(dir)) {
       pid_t pid = fork();
       if (pid == 0) {
-        walk(dir->d_name, pattern, depth - 1);
+        walk(startpath, dir->d_name, pattern, depth - 1);
         break;
       }
     } else if (is_text_file(dir) && contains_pattern(dir->d_name, pattern)) {
-      printf("Found pattern in file: %s\n", dir->d_name);
+      char cwd[PATH_MAX];
+      getcwd(cwd, sizeof(cwd));
+      strcat(cwd, "/");
+      strcat(cwd, dir->d_name);
+      remove_prefix(strlen(startpath), cwd);
+
+      printf("[%d] Found pattern in file: %s\n", getpid(), cwd);
     }
   }
   closedir(dir_handle);
@@ -96,14 +115,9 @@ bool is_curr_or_parent_dir(const struct dirent* dir_entry) {
 }
 
 bool contains_pattern(const char* filepath, const char* pattern) {
-  char cwd[PATH_MAX];
-  getcwd(cwd, sizeof(cwd));
-  strcat(cwd, "/");
-  strcat(cwd, filepath);
-  printf("searching: %s\n", cwd);
   pid_t pid = vfork();
   if (pid == 0) {
-    char* args[] = {"grep", (char*)pattern, cwd, "-q", NULL};
+    char* args[] = {"grep", (char*)pattern, (char*)filepath, "-q", NULL};
     execvp(args[0], args);
     printf("errno: %d\n", errno);
     assert(errno == 0);
@@ -113,4 +127,8 @@ bool contains_pattern(const char* filepath, const char* pattern) {
     return WEXITSTATUS(status) == 0;
   }
   return false;
+}
+
+void remove_prefix(const int prefix_len, char* buffer) {
+  memmove(buffer, buffer + prefix_len, strlen(buffer) + 1 - prefix_len);
 }

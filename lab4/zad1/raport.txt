@@ -1,0 +1,26 @@
+=== Ignore ===
+====== Child process ======
+SIGUSR1 NOT handled
+====== Parent process ======
+SIGUSR1 NOT handled
+
+=== Handler ===
+====== Child process ======
+SIGUSR1 handled
+====== Parent process ======
+SIGUSR1 handled
+
+=== Mask ===
+====== Child process ======
+SIGUSR1 NOT handled
+====== Parent process ======
+SIGUSR1 NOT handled
+
+=== Pending ===
+====== Child process ======
+SIGUSR1 is pending.
+SIGUSR1 NOT handled
+====== Parent process ======
+SIGUSR1 is pending.
+SIGUSR1 NOT handled
+

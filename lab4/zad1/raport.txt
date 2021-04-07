@@ -1,26 +1,1371 @@
+
+Handling SIGHUP
 === Ignore ===
+=== Ignore ===
+SIGHUP NOT handled
 ====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGHUP NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGHUP is pending.
+SIGHUP NOT handled
+====== Child process ======
+
+
+Handling SIGINT
+=== Ignore ===
+=== Ignore ===
+SIGINT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGINT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGINT is pending.
+SIGINT NOT handled
+====== Child process ======
+
+
+Handling SIGQUIT
+=== Ignore ===
+=== Ignore ===
+SIGQUIT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGQUIT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGQUIT is pending.
+SIGQUIT NOT handled
+====== Child process ======
+
+
+Handling SIGILL
+=== Ignore ===
+=== Ignore ===
+SIGILL NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGILL NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGILL is pending.
+SIGILL NOT handled
+====== Child process ======
+
+
+Handling SIGABRT
+=== Ignore ===
+=== Ignore ===
+SIGABRT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGABRT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGABRT is pending.
+SIGABRT NOT handled
+====== Child process ======
+
+
+Handling SIGFPE
+=== Ignore ===
+=== Ignore ===
+SIGFPE NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGFPE NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGFPE is pending.
+SIGFPE NOT handled
+====== Child process ======
+
+
+Handling SIGSEGV
+=== Ignore ===
+=== Ignore ===
+SIGSEGV NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGSEGV NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGSEGV is pending.
+SIGSEGV NOT handled
+====== Child process ======
+
+
+Handling SIGPIPE
+=== Ignore ===
+=== Ignore ===
+SIGPIPE NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGPIPE NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGPIPE is pending.
+SIGPIPE NOT handled
+====== Child process ======
+
+
+Handling SIGALRM
+=== Ignore ===
+=== Ignore ===
+SIGALRM NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGALRM NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGALRM is pending.
+SIGALRM NOT handled
+====== Child process ======
+
+
+Handling SIGTERM
+=== Ignore ===
+=== Ignore ===
+SIGTERM NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTERM NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTERM is pending.
+SIGTERM NOT handled
+====== Child process ======
+
+
+Handling SIGCHLD
+=== Ignore ===
+=== Ignore ===
+SIGCHLD NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGCHLD NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGCHLD is pending.
+SIGCHLD NOT handled
+====== Child process ======
+
+
+Handling SIGCONT
+=== Ignore ===
+=== Ignore ===
+SIGCONT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGCONT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGCONT is pending.
+SIGCONT NOT handled
+====== Child process ======
+
+
+Handling SIGTSTP
+=== Ignore ===
+=== Ignore ===
+SIGTSTP NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTSTP NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTSTP is pending.
+SIGTSTP NOT handled
+====== Child process ======
+
+
+Handling SIGTTIN
+=== Ignore ===
+=== Ignore ===
+SIGTTIN NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTTIN NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTTIN is pending.
+SIGTTIN NOT handled
+====== Child process ======
+
+
+Handling SIGTTOU
+=== Ignore ===
+=== Ignore ===
+SIGTTOU NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTTOU NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTTOU is pending.
+SIGTTOU NOT handled
+====== Child process ======
+
+
+Handling SIGUSR1
+=== Ignore ===
+=== Ignore ===
 SIGUSR1 NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGUSR1 NOT handled
+====== Child process ======
+
+=== Pending ===
+
+Handling SIGHUP
+=== Ignore ===
+=== Ignore ===
+SIGHUP NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGHUP NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGHUP is pending.
+SIGHUP NOT handled
+====== Child process ======
+
+
+Handling SIGINT
+=== Ignore ===
+=== Ignore ===
+SIGINT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGINT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGINT is pending.
+SIGINT NOT handled
+====== Child process ======
+
+
+Handling SIGQUIT
+=== Ignore ===
+=== Ignore ===
+SIGQUIT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGQUIT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGQUIT is pending.
+SIGQUIT NOT handled
+====== Child process ======
+
+
+Handling SIGILL
+=== Ignore ===
+=== Ignore ===
+SIGILL NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGILL NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGILL is pending.
+SIGILL NOT handled
+====== Child process ======
+
+
+Handling SIGABRT
+=== Ignore ===
+=== Ignore ===
+SIGABRT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGABRT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGABRT is pending.
+SIGABRT NOT handled
+====== Child process ======
+
+
+Handling SIGFPE
+=== Ignore ===
+=== Ignore ===
+SIGFPE NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGFPE NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGFPE is pending.
+SIGFPE NOT handled
+====== Child process ======
+
+
+Handling SIGSEGV
+=== Ignore ===
+=== Ignore ===
+SIGSEGV NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGSEGV NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGSEGV is pending.
+SIGSEGV NOT handled
+====== Child process ======
+
+
+Handling SIGPIPE
+=== Ignore ===
+=== Ignore ===
+SIGPIPE NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGPIPE NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGPIPE is pending.
+SIGPIPE NOT handled
+====== Child process ======
+
+
+Handling SIGALRM
+=== Ignore ===
+=== Ignore ===
+SIGALRM NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGALRM NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGALRM is pending.
+SIGALRM NOT handled
+====== Child process ======
+
+
+Handling SIGTERM
+=== Ignore ===
+=== Ignore ===
+SIGTERM NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTERM NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTERM is pending.
+SIGTERM NOT handled
+====== Child process ======
+
+
+Handling SIGCHLD
+=== Ignore ===
+=== Ignore ===
+SIGCHLD NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGCHLD NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGCHLD is pending.
+SIGCHLD NOT handled
+====== Child process ======
+
+
+Handling SIGCONT
+=== Ignore ===
+=== Ignore ===
+SIGCONT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGCONT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGCONT is pending.
+SIGCONT NOT handled
+====== Child process ======
+
+
+Handling SIGTSTP
+=== Ignore ===
+=== Ignore ===
+SIGTSTP NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTSTP NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTSTP is pending.
+SIGTSTP NOT handled
+====== Child process ======
+
+
+Handling SIGTTIN
+=== Ignore ===
+=== Ignore ===
+SIGTTIN NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTTIN NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTTIN is pending.
+SIGTTIN NOT handled
+====== Child process ======
+
+
+Handling SIGTTOU
+=== Ignore ===
+=== Ignore ===
+SIGTTOU NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTTOU NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTTOU is pending.
+SIGTTOU NOT handled
+====== Child process ======
+
+
+Handling SIGUSR1
+=== Ignore ===
+=== Ignore ===
+SIGUSR1 NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGUSR1 NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGUSR1 is pending.
+SIGUSR1 NOT handled
+====== Child process ======
+
+
+Handling SIGUSR2
+=== Ignore ===
+=== Ignore ===
+SIGUSR2 NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGUSR2 NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGUSR2 is pending.
+SIGUSR2 NOT handled
+====== Child process ======
+
+
+Handling SIGHUP
+=== Ignore ===
+=== Ignore ===
+SIGHUP NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGHUP NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGHUP is pending.
+SIGHUP NOT handled
+====== Child process ======
+
+
+Handling SIGINT
+=== Ignore ===
+=== Ignore ===
+SIGINT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGINT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGINT is pending.
+SIGINT NOT handled
+====== Child process ======
+
+
+Handling SIGQUIT
+=== Ignore ===
+=== Ignore ===
+SIGQUIT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGQUIT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGQUIT is pending.
+SIGQUIT NOT handled
+====== Child process ======
+
+
+Handling SIGILL
+=== Ignore ===
+=== Ignore ===
+SIGILL NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGILL NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGILL is pending.
+SIGILL NOT handled
+====== Child process ======
+
+
+Handling SIGABRT
+=== Ignore ===
+=== Ignore ===
+SIGABRT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGABRT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGABRT is pending.
+SIGABRT NOT handled
+====== Child process ======
+
+
+Handling SIGFPE
+=== Ignore ===
+=== Ignore ===
+SIGFPE NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGFPE NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGFPE is pending.
+SIGFPE NOT handled
+====== Child process ======
+
+
+Handling SIGSEGV
+=== Ignore ===
+=== Ignore ===
+SIGSEGV NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGSEGV NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGSEGV is pending.
+SIGSEGV NOT handled
+====== Child process ======
+
+
+Handling SIGPIPE
+=== Ignore ===
+=== Ignore ===
+SIGPIPE NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGPIPE NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGPIPE is pending.
+SIGPIPE NOT handled
+====== Child process ======
+
+
+Handling SIGALRM
+=== Ignore ===
+=== Ignore ===
+SIGALRM NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGALRM NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGALRM is pending.
+SIGALRM NOT handled
+====== Child process ======
+
+
+Handling SIGTERM
+=== Ignore ===
+=== Ignore ===
+SIGTERM NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTERM NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTERM is pending.
+SIGTERM NOT handled
+====== Child process ======
+
+
+Handling SIGCHLD
+=== Ignore ===
+=== Ignore ===
+SIGCHLD NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGCHLD NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGCHLD is pending.
+SIGCHLD NOT handled
+====== Child process ======
+
+
+Handling SIGCONT
+=== Ignore ===
+=== Ignore ===
+SIGCONT NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGCONT NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGCONT is pending.
+SIGCONT NOT handled
+====== Child process ======
+
+
+Handling SIGTSTP
+=== Ignore ===
+=== Ignore ===
+SIGTSTP NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTSTP NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTSTP is pending.
+SIGTSTP NOT handled
+====== Child process ======
+
+
+Handling SIGTTIN
+=== Ignore ===
+=== Ignore ===
+SIGTTIN NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTTIN NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTTIN is pending.
+SIGTTIN NOT handled
+====== Child process ======
+
+
+Handling SIGTTOU
+=== Ignore ===
+=== Ignore ===
+SIGTTOU NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGTTOU NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGTTOU is pending.
+SIGTTOU NOT handled
+====== Child process ======
+
+
+Handling SIGUSR1
+=== Ignore ===
+=== Ignore ===
+SIGUSR1 NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGUSR1 NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGUSR1 is pending.
+SIGUSR1 NOT handled
+====== Child process ======
+
+
+Handling SIGUSR2
+=== Ignore ===
+=== Ignore ===
+SIGUSR2 NOT handled
+====== Child process ======
+
+=== Mask ===
+=== Mask ===
+SIGUSR2 NOT handled
+====== Child process ======
+
+=== Pending ===
+=== Pending ===
+SIGUSR2 is pending.
+SIGUSR2 NOT handled
+====== Child process ======
+
+
+Handling SIGHUP
+=== Ignore ===
 ====== Parent process ======
+SIGHUP NOT handled
+====== Child process ======
+SIGHUP NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGHUP handled
+====== Child process ======
+SIGHUP handled
+
+=== Mask ===
+====== Parent process ======
+SIGHUP NOT handled
+====== Child process ======
+SIGHUP NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGHUP is pending.
+SIGHUP NOT handled
+====== Child process ======
+SIGHUP is pending.
+SIGHUP NOT handled
+
+
+Handling SIGINT
+=== Ignore ===
+====== Parent process ======
+SIGINT NOT handled
+====== Child process ======
+SIGINT NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGINT handled
+====== Child process ======
+SIGINT handled
+
+=== Mask ===
+====== Parent process ======
+SIGINT NOT handled
+====== Child process ======
+SIGINT NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGINT is pending.
+SIGINT NOT handled
+====== Child process ======
+SIGINT is pending.
+SIGINT NOT handled
+
+
+Handling SIGQUIT
+=== Ignore ===
+====== Parent process ======
+SIGQUIT NOT handled
+====== Child process ======
+SIGQUIT NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGQUIT handled
+====== Child process ======
+SIGQUIT handled
+
+=== Mask ===
+====== Parent process ======
+SIGQUIT NOT handled
+====== Child process ======
+SIGQUIT NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGQUIT is pending.
+SIGQUIT NOT handled
+====== Child process ======
+SIGQUIT is pending.
+SIGQUIT NOT handled
+
+
+Handling SIGILL
+=== Ignore ===
+====== Parent process ======
+SIGILL NOT handled
+====== Child process ======
+SIGILL NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGILL handled
+====== Child process ======
+SIGILL handled
+
+=== Mask ===
+====== Parent process ======
+SIGILL NOT handled
+====== Child process ======
+SIGILL NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGILL is pending.
+SIGILL NOT handled
+====== Child process ======
+SIGILL is pending.
+SIGILL NOT handled
+
+
+Handling SIGABRT
+=== Ignore ===
+====== Parent process ======
+SIGABRT NOT handled
+====== Child process ======
+SIGABRT NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGABRT handled
+====== Child process ======
+SIGABRT handled
+
+=== Mask ===
+====== Parent process ======
+SIGABRT NOT handled
+====== Child process ======
+SIGABRT NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGABRT is pending.
+SIGABRT NOT handled
+====== Child process ======
+SIGABRT is pending.
+SIGABRT NOT handled
+
+
+Handling SIGFPE
+=== Ignore ===
+====== Parent process ======
+SIGFPE NOT handled
+====== Child process ======
+SIGFPE NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGFPE handled
+====== Child process ======
+SIGFPE handled
+
+=== Mask ===
+====== Parent process ======
+SIGFPE NOT handled
+====== Child process ======
+SIGFPE NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGFPE is pending.
+SIGFPE NOT handled
+====== Child process ======
+SIGFPE is pending.
+SIGFPE NOT handled
+
+
+Handling SIGSEGV
+=== Ignore ===
+====== Parent process ======
+SIGSEGV NOT handled
+====== Child process ======
+SIGSEGV NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGSEGV handled
+====== Child process ======
+SIGSEGV handled
+
+=== Mask ===
+====== Parent process ======
+SIGSEGV NOT handled
+====== Child process ======
+SIGSEGV NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGSEGV is pending.
+SIGSEGV NOT handled
+====== Child process ======
+SIGSEGV is pending.
+SIGSEGV NOT handled
+
+
+Handling SIGPIPE
+=== Ignore ===
+====== Parent process ======
+SIGPIPE NOT handled
+====== Child process ======
+SIGPIPE NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGPIPE handled
+====== Child process ======
+SIGPIPE handled
+
+=== Mask ===
+====== Parent process ======
+SIGPIPE NOT handled
+====== Child process ======
+SIGPIPE NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGPIPE is pending.
+SIGPIPE NOT handled
+====== Child process ======
+SIGPIPE is pending.
+SIGPIPE NOT handled
+
+
+Handling SIGALRM
+=== Ignore ===
+====== Parent process ======
+SIGALRM NOT handled
+====== Child process ======
+SIGALRM NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGALRM handled
+====== Child process ======
+SIGALRM handled
+
+=== Mask ===
+====== Parent process ======
+SIGALRM NOT handled
+====== Child process ======
+SIGALRM NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGALRM is pending.
+SIGALRM NOT handled
+====== Child process ======
+SIGALRM is pending.
+SIGALRM NOT handled
+
+
+Handling SIGTERM
+=== Ignore ===
+====== Parent process ======
+SIGTERM NOT handled
+====== Child process ======
+SIGTERM NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGTERM handled
+====== Child process ======
+SIGTERM handled
+
+=== Mask ===
+====== Parent process ======
+SIGTERM NOT handled
+====== Child process ======
+SIGTERM NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGTERM is pending.
+SIGTERM NOT handled
+====== Child process ======
+SIGTERM is pending.
+SIGTERM NOT handled
+
+
+Handling SIGCHLD
+=== Ignore ===
+====== Parent process ======
+SIGCHLD NOT handled
+====== Child process ======
+SIGCHLD NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGCHLD handled
+====== Child process ======
+SIGCHLD handled
+
+=== Mask ===
+====== Parent process ======
+SIGCHLD NOT handled
+====== Child process ======
+SIGCHLD NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGCHLD is pending.
+SIGCHLD NOT handled
+====== Child process ======
+SIGCHLD is pending.
+SIGCHLD NOT handled
+
+
+Handling SIGCONT
+=== Ignore ===
+====== Parent process ======
+SIGCONT NOT handled
+====== Child process ======
+SIGCONT NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGCONT handled
+====== Child process ======
+SIGCONT handled
+
+=== Mask ===
+====== Parent process ======
+SIGCONT NOT handled
+====== Child process ======
+SIGCONT NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGCONT is pending.
+SIGCONT NOT handled
+====== Child process ======
+SIGCONT is pending.
+SIGCONT NOT handled
+
+
+Handling SIGTSTP
+=== Ignore ===
+====== Parent process ======
+SIGTSTP NOT handled
+====== Child process ======
+SIGTSTP NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGTSTP handled
+====== Child process ======
+SIGTSTP handled
+
+=== Mask ===
+====== Parent process ======
+SIGTSTP NOT handled
+====== Child process ======
+SIGTSTP NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGTSTP is pending.
+SIGTSTP NOT handled
+====== Child process ======
+SIGTSTP is pending.
+SIGTSTP NOT handled
+
+
+Handling SIGTTIN
+=== Ignore ===
+====== Parent process ======
+SIGTTIN NOT handled
+====== Child process ======
+SIGTTIN NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGTTIN handled
+====== Child process ======
+SIGTTIN handled
+
+=== Mask ===
+====== Parent process ======
+SIGTTIN NOT handled
+====== Child process ======
+SIGTTIN NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGTTIN is pending.
+SIGTTIN NOT handled
+====== Child process ======
+SIGTTIN is pending.
+SIGTTIN NOT handled
+
+
+Handling SIGTTOU
+=== Ignore ===
+====== Parent process ======
+SIGTTOU NOT handled
+====== Child process ======
+SIGTTOU NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGTTOU handled
+====== Child process ======
+SIGTTOU handled
+
+=== Mask ===
+====== Parent process ======
+SIGTTOU NOT handled
+====== Child process ======
+SIGTTOU NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGTTOU is pending.
+SIGTTOU NOT handled
+====== Child process ======
+SIGTTOU is pending.
+SIGTTOU NOT handled
+
+
+Handling SIGUSR1
+=== Ignore ===
+====== Parent process ======
+SIGUSR1 NOT handled
+====== Child process ======
 SIGUSR1 NOT handled
 
 === Handler ===
-====== Child process ======
-SIGUSR1 handled
 ====== Parent process ======
+SIGUSR1 handled
+====== Child process ======
 SIGUSR1 handled
 
 === Mask ===
-====== Child process ======
-SIGUSR1 NOT handled
 ====== Parent process ======
+SIGUSR1 NOT handled
+====== Child process ======
 SIGUSR1 NOT handled
 
 === Pending ===
-====== Child process ======
-SIGUSR1 is pending.
-SIGUSR1 NOT handled
 ====== Parent process ======
 SIGUSR1 is pending.
 SIGUSR1 NOT handled
+====== Child process ======
+SIGUSR1 is pending.
+SIGUSR1 NOT handled
+
+
+Handling SIGUSR2
+=== Ignore ===
+====== Parent process ======
+SIGUSR2 NOT handled
+====== Child process ======
+SIGUSR2 NOT handled
+
+=== Handler ===
+====== Parent process ======
+SIGUSR2 handled
+====== Child process ======
+SIGUSR2 handled
+
+=== Mask ===
+====== Parent process ======
+SIGUSR2 NOT handled
+====== Child process ======
+SIGUSR2 NOT handled
+
+=== Pending ===
+====== Parent process ======
+SIGUSR2 is pending.
+SIGUSR2 NOT handled
+====== Child process ======
+SIGUSR2 is pending.
+SIGUSR2 NOT handled
 

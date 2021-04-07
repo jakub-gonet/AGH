@@ -1,0 +1,4 @@
+[21260] SA_SIGINFO , signal type: 30
+[21260] SA_SIGINFO | SA_NODEFER, signal type: 30, reentry: 1
+[21260] SA_SIGINFO | SA_RESETHAND, signal type: 30
+make: *** [test] User defined signal 1: 30

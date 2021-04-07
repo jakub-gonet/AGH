@@ -36,8 +36,9 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include "flag.h"
 
-volatile sig_atomic_t signal_flag = false;
+extern volatile sig_atomic_t signal_flag;
 
 void signal_handler(int sig_num) {
   (void)sig_num;

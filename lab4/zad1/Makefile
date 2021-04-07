@@ -9,7 +9,7 @@ SIG_NON_MASK_NAMES := SIGSTOP SIGKILL
 
 all: main
 
-main: main.c
+main: main.c flag.h
 	$(CC) $(CFLAGS) main.c -o main
 
 test: main

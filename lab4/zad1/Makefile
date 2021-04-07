@@ -7,12 +7,25 @@ SIG_NON_MASK_NAMES := SIGSTOP SIGKILL
 
 .PHONY: all test clean
 
-all: main
+all: main main_exec child
 
 main: main.c flag.h
 	$(CC) $(CFLAGS) main.c -o main
 
-test: main
+main_exec: main_exec.c flag.h
+	$(CC) $(CFLAGS) main_exec.c -o main_exec
+
+child: child.c flag.h
+	$(CC) $(CFLAGS) child.c -o child
+
+test: main main_exec child
+	for name in $(SIG_NAMES) ; do \
+		echo "handling $$name" ; \
+		echo -e "\nHandling $$name" >> $(RAPORT_F) ;\
+		./main_exec ignore $$name >> $(RAPORT_F) ; \
+		./main_exec mask $$name >> $(RAPORT_F) ; \
+		./main_exec pending $$name >> $(RAPORT_F) ; \
+	done
 	for name in $(SIG_NAMES) ; do \
 		echo "handling $$name" ; \
 		echo -e "\nHandling $$name" >> $(RAPORT_F) ;\
@@ -24,4 +37,4 @@ test: main
 
 
 clean:
-	$(RM) main $(RAPORT_F)
+	$(RM) main main_exec child $(RAPORT_F)

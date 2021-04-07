@@ -96,6 +96,28 @@ int str_to_signal(const char* string) {
   }
 }
 
+void check_handlers(bool is_pending, const char* sig_name, int signal) {
+  // sleep 100 ms
+  usleep(100 * 1000);
+  if (signal_flag) {
+    printf("%s handled\n", sig_name);
+  }
+
+  if (is_pending) {
+    sigset_t curr_mask;
+    sigpending(&curr_mask);
+    if (sigismember(&curr_mask, signal)) {
+      printf("%s is pending.\n", sig_name);
+    } else {
+      printf("%s is NOT pending.\n", sig_name);
+    }
+  }
+
+  if (!signal_flag) {
+    printf("%s NOT handled\n", sig_name);
+  }
+}
+
 int main(int argc, char const* argv[]) {
   assert(argc == 3);
   bool check_if_pending = false;
@@ -119,46 +141,22 @@ int main(int argc, char const* argv[]) {
     assert(false && "no action defined for this option.");
     exit(EXIT_FAILURE);
   }
+
+  printf("====== Parent process ======\n");
+  raise(signal_type);
+  check_handlers(check_if_pending, signal_type_str, signal_flag);
+
   fflush(stdout);
   pid_t pid = fork();
   assert(pid >= 0);
   if (pid == 0) {
     printf("====== Child process ======\n");
-  } else {
+    if (!check_if_pending) {
+      raise(signal_type);
+    }
+    check_handlers(check_if_pending, signal_type_str, signal_flag);
+  } else if (pid > 0) {
     wait(NULL);
-    printf("====== Parent process ======\n");
-  }
-
-  raise(signal_type);
-
-  time_t curr_time = time(NULL);
-  time_t end_wait = curr_time + 1;
-  // wait 1s
-  while (curr_time < end_wait) {
-    curr_time = time(NULL);
-    // sleep 100 ms
-    usleep(100 * 1000);
-
-    if (signal_flag) {
-      printf("%s handled\n", signal_type_str);
-      break;
-    }
-  }
-
-  if (check_if_pending) {
-    sigset_t curr_mask;
-    sigpending(&curr_mask);
-    if (sigismember(&curr_mask, signal_type)) {
-      printf("%s is pending.\n", signal_type_str);
-    } else {
-      printf("%s is NOT pending.\n", signal_type_str);
-    }
-  }
-
-  if (!signal_flag) {
-    printf("%s NOT handled\n", signal_type_str);
-  }
-  if (pid > 0) {
     printf("\n");
   }
   return 0;

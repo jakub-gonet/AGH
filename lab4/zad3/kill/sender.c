@@ -12,9 +12,9 @@ volatile sig_atomic_t sig_flag = false;
 volatile size_t sig_count = 0;
 
 void handler(int sig_num) {
-  if (sig_num == SIGUSR1) {
+  if (sig_num == SIGUSR1 || sig_num == SIGRTMIN) {
     ++sig_count;
-  } else if (sig_num == SIGUSR2) {
+  } else if (sig_num == SIGUSR2 || sig_num == (SIGRTMIN + 1)) {
     sig_flag = true;
   }
 };
@@ -26,27 +26,34 @@ int main(int argc, char const* argv[]) {
   const unsigned long n = strtol(argv[2], NULL, 10);
   assert(errno == 0);
   const char* mode = argv[3];
-  const bool is_rt = strcmp(mode, "SIGRT") == 0;
+  const bool via_sigqueue = strcmp(mode, "SIGQUEUE") == 0;
+  const bool via_rt = strcmp(mode, "SIGRT") == 0;
 
-  const int send_sig = is_rt ? SIGRTMIN : SIGUSR1;
-  const int end_send_sig = is_rt ? SIGRTMIN + 1 : SIGUSR2;
+  const int send_sig = via_rt ? SIGRTMIN : SIGUSR1;
+  const int end_send_sig = via_rt ? SIGRTMIN + 1 : SIGUSR2;
 
-  // send signals
-  for (size_t i = 0; i < n; ++i) {
-    kill(catcher_pid, send_sig);
-  }
-  kill(catcher_pid, end_send_sig);
-
-  // RECEIVE
   // block signals
   sigset_t mask;
   sigfillset(&mask);
+  sigdelset(&mask, SIGINT);
   sigdelset(&mask, send_sig);
-  sigdelset(&mask, SIGUSR2);
+  sigdelset(&mask, end_send_sig);
   sigprocmask(end_send_sig, &mask, NULL);
   // register signals
   signal(send_sig, handler);
   signal(end_send_sig, handler);
+
+  // send signals
+  for (size_t i = 0; i < n; ++i) {
+    if (via_sigqueue) {
+    } else {
+      kill(catcher_pid, send_sig);
+    }
+  }
+  if (via_sigqueue) {
+  } else {
+    kill(catcher_pid, end_send_sig);
+  }
 
   // wait for signals
   while (!sig_flag) {

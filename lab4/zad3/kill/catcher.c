@@ -8,14 +8,18 @@
 volatile sig_atomic_t sig_flag = false;
 volatile size_t sig_count = 0;
 volatile sig_atomic_t sender_pid = 0;
+volatile sig_atomic_t sig_type_send = SIGUSR1;
+volatile sig_atomic_t sig_type_end = SIGUSR2;
 
 void handler(int sig_num, siginfo_t* info, void* ucontext) {
   (void)ucontext;
   sender_pid = info->si_pid;
   if (sig_num == SIGUSR1 || sig_num == SIGRTMIN) {
     ++sig_count;
+    sig_type_send = sig_num;
   } else if (sig_num == SIGUSR2 || sig_num == (SIGRTMIN + 1)) {
     sig_flag = true;
+    sig_type_end = sig_num;
   }
 };
 
@@ -30,6 +34,7 @@ int main(void) {
   act.sa_flags = SA_SIGINFO;
   sigset_t mask;
   sigfillset(&mask);
+  sigdelset(&mask, SIGINT);
   sigdelset(&mask, SIGUSR1);
   sigdelset(&mask, SIGUSR2);
   sigdelset(&mask, SIGRTMIN);
@@ -49,9 +54,9 @@ int main(void) {
 
   // flag is set, lets echo signals
   for (size_t i = 0; i < sig_count; ++i) {
-    kill(sender_pid, SIGUSR1);
+    kill(sender_pid, sig_type_send);
   }
-  kill(sender_pid, SIGUSR2);
+  kill(sender_pid, sig_type_end);
 
   printf("Catcher got %ld signals\n", sig_count);
 

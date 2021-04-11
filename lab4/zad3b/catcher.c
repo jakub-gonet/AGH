@@ -10,9 +10,13 @@ volatile size_t sig_count = 0;
 volatile sig_atomic_t sender_pid = 0;
 volatile sig_atomic_t sig_type_send = SIGUSR1;
 volatile sig_atomic_t sig_type_end = SIGUSR2;
+volatile sig_atomic_t sig_ignore = false;
 
 void handler(int sig_num, siginfo_t* info, void* ucontext) {
   (void)ucontext;
+  if (sig_ignore) {
+    return;
+  }
   sender_pid = info->si_pid;
   if (sig_num == SIGUSR1 || sig_num == SIGRTMIN) {
     ++sig_count;
@@ -28,19 +32,21 @@ int main(void) {
   printf("%d\n", getpid());
 
   // block signals
+  sigset_t block_all;
+  sigfillset(&block_all);
+  sigdelset(&block_all, SIGINT);
+  sigprocmask(SIG_SETMASK, &block_all, NULL);
+
   struct sigaction act;
   act.sa_sigaction = handler;
-  sigemptyset(&act.sa_mask);
   act.sa_flags = SA_SIGINFO;
+  sigemptyset(&act.sa_mask);
+
   sigset_t mask;
-  sigfillset(&mask);
-  sigdelset(&mask, SIGINT);
   sigdelset(&mask, SIGUSR1);
   sigdelset(&mask, SIGUSR2);
   sigdelset(&mask, SIGRTMIN);
   sigdelset(&mask, SIGRTMIN + 1);
-  act.sa_mask = mask;
-  sigprocmask(SIG_SETMASK, &mask, NULL);
   // register signals
   sigaction(SIGUSR1, &act, NULL);
   sigaction(SIGUSR2, &act, NULL);
@@ -50,11 +56,16 @@ int main(void) {
   // wait for signals
   while (!sig_flag) {
     sigsuspend(&mask);
+    kill(sender_pid, sig_type_send);
+    usleep(100);
   }
+  // ignore signals
+  sig_ignore = true;
 
   // flag is set, lets echo signals
   for (size_t i = 0; i < sig_count; ++i) {
     kill(sender_pid, sig_type_send);
+    sigsuspend(&mask);
   }
   sigqueue(sender_pid, sig_type_end, (union sigval){sig_count});
 

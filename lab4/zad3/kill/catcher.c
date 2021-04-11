@@ -56,7 +56,7 @@ int main(void) {
   for (size_t i = 0; i < sig_count; ++i) {
     kill(sender_pid, sig_type_send);
   }
-  kill(sender_pid, sig_type_end);
+  sigqueue(sender_pid, sig_type_end, (union sigval){sig_count});
 
   printf("Catcher got %ld signals\n", sig_count);
 

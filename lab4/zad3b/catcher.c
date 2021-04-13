@@ -57,7 +57,6 @@ int main(void) {
   while (!sig_flag) {
     sigsuspend(&mask);
     kill(sender_pid, sig_type_send);
-    usleep(100);
   }
   // ignore signals
   sig_ignore = true;

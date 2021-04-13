@@ -19,7 +19,6 @@ void handler(int sig_num, siginfo_t* info, void* ctx) {
   } else if (sig_num == SIGUSR2 || sig_num == (SIGRTMIN + 1)) {
     sig_flag = true;
     if (info->si_code == SI_QUEUE) {
-      printf("XD\n");
       catcher_sig_count = info->si_value.sival_int;
     }
   }

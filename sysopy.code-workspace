@@ -10,7 +10,16 @@
 			"assert.h": "c",
 			"stdbool.h": "c",
 			"types.h": "c",
-			"errno.h": "c"
+			"errno.h": "c",
+			"dirent.h": "c",
+			"param.h": "c",
+			"typeinfo": "c",
+			"time.h": "c",
+			"stdio.h": "c",
+			"signal.h": "c",
+			"sigset_t.h": "c",
+			"cstdlib": "c",
+			"wait.h": "c"
 		}
 	}
 }

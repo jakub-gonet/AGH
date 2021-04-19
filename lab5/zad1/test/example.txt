@@ -1,6 +1,6 @@
 składnik1 = cat /etc/passwd | wc -l
-składnik2 = ls | grep '^a'
-składnik3 = grep 11
+składnik2 = ls -hal | grep \.$
+składnik3 = xargs printf 0x%x\n
 
 składnik1 | składnik3
 składnik1

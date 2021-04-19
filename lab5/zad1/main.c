@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include "vector.h"
 
+enum PIPES { READ, WRITE };
+
 // // DEBUG
 // for (size_t i = 0; i < vec_get_size(rules); i++) {
 //   printf("[rule %ld]\n", i);
@@ -30,6 +32,8 @@ void free_cmd(args_t cmd_with_args);
 char* trim(char* str);
 char* get_first_number(char* cmd);
 void exec_rule(rule_t to_exec);
+void close_unused_fd(int pipe_in, int pipe_out, size_t i, size_t size);
+void connect_pipe(int pipe_in, int pipe_out, size_t i, size_t size);
 
 int main(int argc, char const* argv[]) {
   assert(argc == 1 + 1);
@@ -52,7 +56,7 @@ int main(int argc, char const* argv[]) {
     } else if (strlen(trimmed_line) != 0) {
       // exec rule
       rule_t to_exec = prepare_next_cmd(trimmed_line, rules);
-      // exec_rule(to_exec);
+      exec_rule(to_exec);
       vec_free(to_exec);
     }
 
@@ -69,27 +73,63 @@ int main(int argc, char const* argv[]) {
 }
 
 void exec_rule(rule_t to_exec) {
-  int fd[2];
-  pipe(fd);
   const size_t size = vec_get_size(to_exec);
+
+  int pipe_fds[2];
+  int prev = STDIN_FILENO;
+
   for (size_t i = 0; i < size; i++) {
     args_t args = to_exec[i];
-    pid_t pid = fork();
-    if (pid == 0) {
-      if (i == 0) {
-        close(fd[1]);
-      } else if (i == size - 1) {
-        close(fd[0]);
-      }
-      dup2(fd[0], STDIN_FILENO);
-      dup2(fd[1], STDOUT_FILENO);
 
-      execv(args[0], args);
+    pipe(pipe_fds);
+
+    pid_t pid = fork();
+    assert(pid != -1);
+    if (pid == 0) {
+      // printf("[%ld] exec: %s\n", i, args[0]);
+      // printf("\t%s: ", args[0]);
+
+      if (prev != STDIN_FILENO) {
+        dup2(prev, STDIN_FILENO);
+        close(prev);
+      }
+
+      if (i < size - 1) {
+        dup2(pipe_fds[1], STDOUT_FILENO);
+        close(pipe_fds[1]);
+      }
+
+      execvp(args[0], args);
+      assert(0);
+    }
+    if (i < size - 1) {
+      close(prev);
+      close(pipe_fds[1]);
+      prev = pipe_fds[0];
     }
   }
   while (wait(NULL) > 0)
     ;
+  // printf("end exec\n");
 }
+
+// void connect_pipe(int pipe_in, int pipe_out, size_t i, size_t size) {
+//   dup2(, pipe[0]) if (i > 0) {
+//     printf("[%d]", pipe_out);
+//     errno = 0;
+//     int err = dup2(pipe_out, STDIN_FILENO);  // connect input with prev
+//     output
+//     // printf("\t\terrno: %d\n", errno);
+//   }
+//   printf(" -> ");
+//   if (i < size - 1) {
+//     printf("[%d]", pipe_in);
+//     errno = 0;
+//     int err = dup2(pipe_in, STDOUT_FILENO);  // connect output to next input
+//     // printf("\t\terrno: %d, ?%d?\n", errno);
+//   }
+//   printf("\n");
+// }
 
 rule_t prepare_next_cmd(char* line, vec_type(rule_t) rules) {
   rule_t cmds_chain = NULL;

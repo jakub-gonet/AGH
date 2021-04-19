@@ -9,17 +9,6 @@
 
 enum PIPES { READ, WRITE };
 
-// // DEBUG
-// for (size_t i = 0; i < vec_get_size(rules); i++) {
-//   printf("[rule %ld]\n", i);
-//   for (size_t j = 0; j < vec_get_size(rules[i]); j++) {
-//     printf("\t[%ld]\n", j);
-//     for (size_t k = 0; k < vec_get_size(rules[i][j]); k++) {
-//       printf("\t\t[%ld] %s\n", k, rules[i][j][k]);
-//     }
-//   }
-// }
-// // \DEBUG
 typedef vec_type(char*) args_t;
 typedef vec_type(args_t) rule_t;
 
@@ -32,8 +21,8 @@ void free_cmd(args_t cmd_with_args);
 char* trim(char* str);
 char* get_first_number(char* cmd);
 void exec_rule(rule_t to_exec);
-void close_unused_fd(int pipe_in, int pipe_out, size_t i, size_t size);
-void connect_pipe(int pipe_in, int pipe_out, size_t i, size_t size);
+void connect_with_stdout(int pipe_in);
+void connect_with_stdin(int prev_pipe_out);
 
 int main(int argc, char const* argv[]) {
   assert(argc == 1 + 1);
@@ -86,50 +75,35 @@ void exec_rule(rule_t to_exec) {
     pid_t pid = fork();
     assert(pid != -1);
     if (pid == 0) {
-      // printf("[%ld] exec: %s\n", i, args[0]);
-      // printf("\t%s: ", args[0]);
-
-      if (prev != STDIN_FILENO) {
-        dup2(prev, STDIN_FILENO);
-        close(prev);
-      }
-
+      connect_with_stdin(prev);
       if (i < size - 1) {
-        dup2(pipe_fds[1], STDOUT_FILENO);
-        close(pipe_fds[1]);
+        connect_with_stdout(pipe_fds[WRITE]);
       }
-
       execvp(args[0], args);
       assert(0);
     }
     if (i < size - 1) {
+      // close unused
       close(prev);
-      close(pipe_fds[1]);
+      close(pipe_fds[WRITE]);
       prev = pipe_fds[0];
     }
   }
   while (wait(NULL) > 0)
     ;
-  // printf("end exec\n");
 }
 
-// void connect_pipe(int pipe_in, int pipe_out, size_t i, size_t size) {
-//   dup2(, pipe[0]) if (i > 0) {
-//     printf("[%d]", pipe_out);
-//     errno = 0;
-//     int err = dup2(pipe_out, STDIN_FILENO);  // connect input with prev
-//     output
-//     // printf("\t\terrno: %d\n", errno);
-//   }
-//   printf(" -> ");
-//   if (i < size - 1) {
-//     printf("[%d]", pipe_in);
-//     errno = 0;
-//     int err = dup2(pipe_in, STDOUT_FILENO);  // connect output to next input
-//     // printf("\t\terrno: %d, ?%d?\n", errno);
-//   }
-//   printf("\n");
-// }
+void connect_with_stdin(int prev_pipe_out) {
+  if (prev_pipe_out != STDIN_FILENO) {
+    dup2(prev_pipe_out, STDIN_FILENO);
+    close(prev_pipe_out);
+  }
+}
+
+void connect_with_stdout(int pipe_in) {
+  dup2(pipe_in, STDOUT_FILENO);
+  close(pipe_in);
+}
 
 rule_t prepare_next_cmd(char* line, vec_type(rule_t) rules) {
   rule_t cmds_chain = NULL;

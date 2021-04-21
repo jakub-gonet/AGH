@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/file.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -14,7 +15,7 @@ int main(int argc, char const* argv[]) {
   }
   const char* pipe_path = argv[1];
   const char* path = argv[2];
-  const long n = strtol(argv[3], NULL, 10);
+  // const long n = strtol(argv[3], NULL, 10);
   assert(errno == 0);
 
   FILE* pipe = fopen(pipe_path, "r");
@@ -27,7 +28,8 @@ int main(int argc, char const* argv[]) {
   int line_n = -1;
   char buf[BUFFER_SIZE];
   while (fscanf(pipe, "%d %s\n", &line_n, buf) > 0) {
-    sprintf(cmd, "sed -i '%ds/^/%s/' %s", line_n, buf, path);
+    sprintf(cmd, "flock consumer.lock -c \"sed -i '%ds/^/%s/' %s\"", line_n,
+            buf, path);
     system(cmd);
   }
   sprintf(cmd, "_x_=$(cat %s); printf '%%s\\n' \"$_x_\" > %s", path, path);

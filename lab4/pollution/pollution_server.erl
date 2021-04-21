@@ -1,6 +1,10 @@
 -module(pollution_server).
+-behaviour(gen_server).
 
 -export([
+    start_link/0,
+    crash/0,
+    stop/0,
     addStation/2,
     addValue/4,
     getDailyMean/2,
@@ -9,88 +13,86 @@
     getOneValue/3,
     getStationMean/2,
     removeStation/1,
-    removeValue/3,
-    start/0,
-    stop/0
+    removeValue/3
 ]).
 
+-export([
+    init/1,
+    handle_call/3,
+    handle_cast/2
+]).
+
+start_link() -> gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+init([]) -> {ok, pollution:createMonitor()}.
+stop() -> gen_server:stop(?MODULE).
+crash() -> gen_server:cast(?MODULE, crash).
+
 addStation(Name, Coord) ->
-    call({addStation, Name, Coord}).
+    gen_server:call(?MODULE, {addStation, Name, Coord}).
 
 addValue(StationId, Timestamp, MType, Measurement) ->
-    call({addValue, StationId, Timestamp, MType, Measurement}).
+    gen_server:call(?MODULE, {addValue, StationId, Timestamp, MType, Measurement}).
 
 getDailyMean(Date, MType) ->
-    call({getDailyMean, Date, MType}).
+    gen_server:call(?MODULE, {getDailyMean, Date, MType}).
 
 getMinimumPollutionStation(MType) ->
-    call({getMinimumPollutionStation, MType}).
+    gen_server:call(?MODULE, {getMinimumPollutionStation, MType}).
 
 getMostActiveStation(Date) ->
-    call({getMostActiveStation, Date}).
+    gen_server:call(?MODULE, {getMostActiveStation, Date}).
 
 getOneValue(StationId, Timestamp, MType) ->
-    call({getOneValue, StationId, Timestamp, MType}).
+    gen_server:call(?MODULE, {getOneValue, StationId, Timestamp, MType}).
 
 getStationMean(StationId, MType) ->
-    call({getStationMean, StationId, MType}).
+    gen_server:call(?MODULE, {getStationMean, StationId, MType}).
 
 removeStation(StationId) ->
-    call({removeStation, StationId}).
+    gen_server:call(?MODULE, {removeStation, StationId}).
 
 removeValue(StationId, Timestamp, MType) ->
-    call({removeValue, StationId, Timestamp, MType}).
+    gen_server:call(?MODULE, {removeValue, StationId, Timestamp, MType}).
 
-call(Req) ->
-    pollution_server ! {call, self(), Req},
-    receive
-        {pollution_server, Res} ->
-            Res
-    end.
-
-start() ->
-    spawn(fun init/0).
-init() ->
-    register(pollution_server, self()),
-    Monitor = pollution:createMonitor(),
-    loop(Monitor).
-
-loop(Monitor) ->
-    receive
-        {call, From, Req} ->
-            {Res, NewMonitor} = handleCall(Req, Monitor),
-            From ! {pollution_server, Res},
-            loop(NewMonitor);
-        stop ->
-            ok
-    end.
-
-stop() ->
-    pollution_server ! stop,
-    ok.
-
-updateOnSuccess({error, _} = E, Monitor) ->
-    {E, Monitor};
-updateOnSuccess(NewMonitor, _) ->
-    {ok, NewMonitor}.
+handle_cast(crash, State) ->
+    throw("oh no"),
+    "anyway",
+    {noreply, State}.
 
 % this could be cleaner by sending {funName, Args} and using apply/3 but it's slooow
 % http://erlang.org/doc/efficiency_guide/functions.html#function-calls
-handleCall({addStation, Name, Coord}, Monitor) ->
-    updateOnSuccess(pollution:addStation(Name, Coord, Monitor), Monitor);
-handleCall({addValue, StationId, Timestamp, MType, Measurement}, Monitor) ->
-    updateOnSuccess(pollution:addValue(StationId, Timestamp, MType, Measurement, Monitor), Monitor);
-handleCall({getDailyMean, Date, MType}, Monitor) ->
-    {pollution:getDailyMean(Date, MType, Monitor)};
-handleCall({getMinimumPollutionStation, MType}, Monitor) ->
-    {pollution:getMinimumPollutionStation(MType, Monitor), Monitor};
-handleCall({getMostActiveStation, Date}, Monitor) ->
-    {pollution:getMostActiveStation(Date, Monitor), Monitor};
-handleCall({getOneValue, StationId, Timestamp, MType}, Monitor) ->
-    {pollution:getOneValue(StationId, Timestamp, MType, Monitor), Monitor};
-handleCall({getStationMean, StationId, MType}, Monitor) ->
-    {pollution:getStationMean(StationId, MType, Monitor), Monitor};
-handleCall({removeStation, StationId}, Monitor) ->
-    updateOnSuccess(pollution:removeStation(StationId, Monitor), Monitor);
-handleCall({removeValue, StationId, Timestamp, MType}, Monitor) ->
-    updateOnSuccess(pollution:removeValue(StationId, Timestamp, MType, Monitor), Monitor).
+handle_call({addStation, Name, Coord}, _From, Monitor) ->
+    case pollution:addStation(Name, Coord, Monitor) of
+        {error, _} = Error -> {reply, Error, Monitor};
+        {ok, NewMonitor} -> {reply, ok, NewMonitor}
+    end;
+handle_call({addValue, StationId, Timestamp, MType, Measurement}, _From, Monitor) ->
+    case pollution:addValue(StationId, Timestamp, MType, Measurement, Monitor) of
+        {error, _} = Error -> {reply, Error, Monitor};
+        {ok, NewMonitor} -> {reply, ok, NewMonitor}
+    end;
+handle_call({removeStation, StationId}, _From, Monitor) ->
+    case pollution:removeStation(StationId, Monitor) of
+        {error, _} = Error -> {reply, Error, Monitor};
+        {ok, NewMonitor} -> {reply, ok, NewMonitor}
+    end;
+handle_call({removeValue, StationId, Timestamp, MType}, _From, Monitor) ->
+    case pollution:removeValue(StationId, Timestamp, MType, Monitor) of
+        {error, _} = Error -> {reply, Error, Monitor};
+        {ok, NewMonitor} -> {reply, ok, NewMonitor}
+    end;
+handle_call({getDailyMean, Date, MType}, _From, Monitor) ->
+    Reply = pollution:getDailyMean(Date, MType, Monitor),
+    {reply, Reply, Monitor};
+handle_call({getMinimumPollutionStation, MType}, _From, Monitor) ->
+    Reply = pollution:getMinimumPollutionStation(MType, Monitor),
+    {reply, Reply, Monitor};
+handle_call({getMostActiveStation, Date}, _From, Monitor) ->
+    Reply = pollution:getMostActiveStation(Date, Monitor),
+    {reply, Reply, Monitor};
+handle_call({getOneValue, StationId, Timestamp, MType}, _From, Monitor) ->
+    Reply = pollution:getOneValue(StationId, Timestamp, MType, Monitor),
+    {reply, Reply, Monitor};
+handle_call({getStationMean, StationId, MType}, _From, Monitor) ->
+    Reply = pollution:getStationMean(StationId, MType, Monitor),
+    {reply, Reply, Monitor}.

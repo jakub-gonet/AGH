@@ -15,4 +15,5 @@ server: server.c
 test: server client
 
 clean:
+	./remove_queues.sh
 	$(RM) -r *.dSYM server client

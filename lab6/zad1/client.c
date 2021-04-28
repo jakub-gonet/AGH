@@ -58,6 +58,11 @@ void msg_send_stop_to(const msg_queue_id_t destination) {
   msg_send_message_to(destination, &msg);
 }
 
+void msg_send_list_to(const msg_queue_id_t destination) {
+  const struct msg_message_s msg = {.msg_type = LIST, .msg_source = CLIENT};
+  msg_send_message_to(destination, &msg);
+}
+
 void exit_handler(void) {
   msg_send_stop_to(server_queue);
 }

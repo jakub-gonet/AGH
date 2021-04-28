@@ -21,7 +21,6 @@ struct msg_client_s {
 
 struct msg_clients_list_s {
   struct msg_client_s data[MSG_MAX_CLIENTS];
-  size_t last_idx;
   size_t size;
 };
 
@@ -43,9 +42,8 @@ msg_client_id_t msg_add_client(const msg_queue_id_t client_queue) {
     exit(EXIT_FAILURE);
   }
   const msg_client_id_t id = next_client_id++;
-  clients.data[++clients.last_idx] =
+  clients.data[clients.size++] =
       (struct msg_client_s){.queue_id = client_queue, .id = id, .peer = NULL};
-  ++clients.size;
   return id;
 }
 
@@ -66,7 +64,6 @@ bool msg_remove_client(const msg_client_id_t client_id) {
   const ssize_t idx = msg_find_client(client_id);
   if (idx != -1) {
     clients.data[idx].id = -1;
-    --clients.size;
     msgctl(clients.data[idx].queue_id, IPC_RMID, NULL);
     return true;
   }
@@ -101,6 +98,18 @@ void msg_handle_stop(struct msg_message_s* message) {
   assert(is_removed);
 }
 
+void msg_handle_list() {
+  printf("=== Connected clients ===\n");
+  for (size_t i = 0; i < clients.size; i++) {
+    const struct msg_client_s client = clients.data[i];
+    if (msg_is_removed(client.id)) {
+      continue;
+    }
+    printf("Client id: %ld, queue id: %d, available: %s\n", client.id,
+           client.queue_id, client.peer == NULL ? "yes" : "no");
+  }
+}
+
 void msg_stop_all() {
   const struct msg_message_s msg = {
       .msg_type = STOP,
@@ -108,7 +117,7 @@ void msg_stop_all() {
   };
   struct msg_message_s received;
 
-  for (size_t i = 0; i <= clients.last_idx; i++) {
+  for (size_t i = 0; i < clients.size; i++) {
     const struct msg_client_s client = clients.data[i];
     if (msg_is_removed(client.id)) {
       continue;
@@ -134,7 +143,7 @@ int main(void) {
   signal(SIGINT, sigint_handler);
 
   queue = msg_init_server_queue();
-  clients = (struct msg_clients_list_s){.data = {}, .size = 0, .last_idx = -1};
+  clients = (struct msg_clients_list_s){.data = {}, .size = 0};
 
   while (true) {
     struct msg_message_s message;
@@ -146,6 +155,9 @@ int main(void) {
         break;
       case STOP:
         msg_handle_stop(&message);
+        break;
+      case LIST:
+        msg_handle_list();
         break;
       default:
         break;

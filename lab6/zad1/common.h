@@ -32,6 +32,8 @@ struct msg_message_s {
     struct msg_stop_s {
       msg_client_id_t client_id;
     } stop;
+    struct {
+    } list;
   };
 };
 

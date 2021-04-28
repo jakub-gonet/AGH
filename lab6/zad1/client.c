@@ -79,6 +79,7 @@ int main(void) {
   queue = msg_init_client_queue();
   server_queue = msg_get_server_queue();
   client_id = msg_send_init_to(server_queue, queue);
+  msg_queue_id_t peer_queue = -1;
   printf("[Client %ld] Got id\n", client_id);
   while (true) {
     struct msg_message_s message;
@@ -87,6 +88,10 @@ int main(void) {
       case STOP:
         exit(0);
         break;
+      case CONNECT:
+        peer_queue = message.connect.peer_queue;
+      case DISCONNECT:
+        peer_queue = -1;
       default:
         break;
     }

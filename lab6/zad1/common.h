@@ -25,15 +25,20 @@ struct msg_message_s {
   long msg_type; /* enum msg_server_request_t */
   enum msg_message_source_t msg_source;
   union {
-    struct msg_init_s {
+    struct {
+    } list;
+    struct {
       msg_queue_id_t queue_id;
       msg_client_id_t client_id;
     } init;
-    struct msg_stop_s {
-      msg_client_id_t client_id;
-    } stop;
     struct {
-    } list;
+      msg_client_id_t client_id;
+    } stop, disconnect;
+    struct msg_connect_s {
+      msg_client_id_t client_id;
+      msg_client_id_t id_to_connect;
+      msg_queue_id_t peer_queue;
+    } connect;
   };
 };
 

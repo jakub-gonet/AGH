@@ -47,24 +47,33 @@ msg_client_id_t msg_add_client(const msg_queue_id_t client_queue) {
   return id;
 }
 
-ssize_t msg_find_client(const msg_client_id_t client_id) {
+struct msg_client_s* msg_find_client(const msg_client_id_t client_id) {
   for (size_t i = 0; i < clients.size; ++i) {
-    if (clients.data[i].id == client_id) {
-      return i;
+    struct msg_client_s client = clients.data[i];
+    if (client.id == client_id) {
+      return &client;
     }
   }
-  return -1;
+  return NULL;
 }
 
 bool msg_is_removed(const msg_client_id_t client_id) {
-  return msg_find_client(client_id) == -1;
+  return msg_find_client(client_id) == NULL;
+}
+
+bool msg_is_connected(const msg_client_id_t client_id) {
+  const struct msg_client_s* client = msg_find_client(client_id);
+  if (client == NULL || client->peer == NULL) {
+    return false;
+  }
+  return true;
 }
 
 bool msg_remove_client(const msg_client_id_t client_id) {
-  const ssize_t idx = msg_find_client(client_id);
-  if (idx != -1) {
-    clients.data[idx].id = -1;
-    msgctl(clients.data[idx].queue_id, IPC_RMID, NULL);
+  struct msg_client_s* client = msg_find_client(client_id);
+  if (client != NULL) {
+    client->id = -1;
+    msgctl(client->queue_id, IPC_RMID, NULL);
     return true;
   }
   return false;
@@ -106,8 +115,37 @@ void msg_handle_list() {
       continue;
     }
     printf("Client id: %ld, queue id: %d, available: %s\n", client.id,
-           client.queue_id, client.peer == NULL ? "yes" : "no");
+           client.queue_id, msg_is_connected(client.id) ? "yes" : "no");
   }
+}
+
+void msg_handle_connect(struct msg_message_s* message) {
+  const msg_client_id_t source_id = message->connect.client_id;
+  const msg_client_id_t target_id = message->connect.id_to_connect;
+  if (msg_is_connected(source_id) || msg_is_connected(target_id)) {
+    return;
+  }
+  struct msg_client_s* source = msg_find_client(source_id);
+  struct msg_client_s* target = msg_find_client(target_id);
+  source->peer = target;
+  target->peer = source;
+  struct msg_message_s msg = {.msg_type = CONNECT,
+                              .msg_source = SERVER,
+                              .connect = {.peer_queue = source->queue_id}};
+  msg_send_message_to(target->queue_id, &msg);
+  msg.connect.peer_queue = target->queue_id;
+  msg_send_message_to(source->queue_id, &msg);
+}
+
+void msg_handle_disconnect(struct msg_message_s* message) {
+  const struct msg_client_s* client =
+      msg_find_client(message->disconnect.client_id);
+  struct msg_message_s msg = {
+      .msg_type = DISCONNECT,
+      .msg_source = SERVER,
+  };
+  msg_send_message_to(client->queue_id, &msg);
+  msg_send_message_to(client->peer->queue_id, &msg);
 }
 
 void msg_stop_all() {
@@ -159,8 +197,14 @@ int main(void) {
       case LIST:
         msg_handle_list();
         break;
-      default:
+      case CONNECT:
+        msg_handle_connect(&message);
         break;
+      case DISCONNECT:
+        msg_handle_disconnect(&message);
+        break;
+      default:
+        exit(1);
     }
   }
 

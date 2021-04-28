@@ -138,28 +138,33 @@ void msg_handle_connect(struct msg_message_s* message) {
 }
 
 void msg_handle_disconnect(struct msg_message_s* message) {
-  const struct msg_client_s* client =
-      msg_find_client(message->disconnect.client_id);
+  struct msg_client_s* client = msg_find_client(message->disconnect.client_id);
   struct msg_message_s msg = {
       .msg_type = DISCONNECT,
       .msg_source = SERVER,
   };
   msg_send_message_to(client->queue_id, &msg);
   msg_send_message_to(client->peer->queue_id, &msg);
+  client->peer->peer = NULL;
+  client->peer = NULL;
 }
 
 void msg_stop_all() {
-  const struct msg_message_s msg = {
-      .msg_type = STOP,
-      .msg_source = SERVER,
-  };
-  struct msg_message_s received;
-
   for (size_t i = 0; i < clients.size; i++) {
     const struct msg_client_s client = clients.data[i];
     if (msg_is_removed(client.id)) {
       continue;
     }
+
+    struct msg_message_s msg = {.disconnect.client_id = client.id};
+    if (client.peer != NULL) {
+      msg_handle_disconnect(&msg);
+    }
+    msg = (struct msg_message_s){
+        .msg_type = STOP,
+        .msg_source = SERVER,
+    };
+    struct msg_message_s received;
     msg_send_message_to(client.queue_id, &msg);
     msg_receive_of_type(queue, &received, STOP);
     msg_handle_stop(&received);
@@ -186,7 +191,7 @@ int main(void) {
   while (true) {
     struct msg_message_s message;
     msg_receive(queue, &message);
-    printf("Got message of type %ld\n", message.msg_type);
+    // printf("Got message of type %ld\n", message.msg_type);
     switch (message.msg_type) {
       case INIT:
         msg_handle_init(&message);

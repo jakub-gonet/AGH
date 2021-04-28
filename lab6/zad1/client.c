@@ -19,7 +19,6 @@ msg_queue_id_t queue;
 msg_queue_id_t peer_queue;
 
 int msg_init_client_queue(void) {
-  printf("Creating a client with a key %d\n", getpid());
   const int queue_id = msgget(getpid(), IPC_CREAT | IPC_EXCL | 0666);
   assert(queue_id != -1);
   return queue_id;
@@ -31,27 +30,27 @@ int msg_get_server_queue(void) {
   return queue_id;
 }
 
-bool msg_receive(const msg_queue_id_t from, struct msg_message_s* msg) {
-  const int res = msgrcv(from, msg, MSG_STRUCT_SIZE, 0, 0);
-  if (res < 0) {
-    if (errno == EIDRM) {
-      return false;
-    }
-    // perror(strerror(errno));
+void msg_receive(const msg_queue_id_t from, struct msg_message_s* msg) {
+  int err;
+  do {
+    err = msgrcv(from, msg, MSG_STRUCT_SIZE, 0, 0);
+  } while (err < 0 && errno == EINTR);
+  if (errno == EINTR) {
+    errno = 0;
   }
-  return true;
+  assert(errno == 0);
 }
 
-bool msg_send_message_to(const msg_queue_id_t queue,
+void msg_send_message_to(const msg_queue_id_t queue,
                          const struct msg_message_s* msg) {
-  const int res = msgsnd(queue, msg, MSG_STRUCT_SIZE, 0);
-  if (res < 0) {
-    if (errno == EIDRM) {
-      return false;
-    }
-    assert(errno == 0);
+  int err;
+  do {
+    err = msgsnd(queue, msg, MSG_STRUCT_SIZE, 0);
+  } while (err < 0 && errno == EINTR);
+  if (errno == EINTR) {
+    errno = 0;
   }
-  return true;
+  assert(errno == 0);
 }
 
 msg_client_id_t msg_send_init_to(const msg_queue_id_t destination,
@@ -93,29 +92,38 @@ void msg_send_disconnect_to(const msg_queue_id_t destination) {
   msg_send_message_to(destination, &msg);
 }
 
+bool has_prefix(char* buf, char* prefix) {
+  return strncmp(buf, prefix, strlen(prefix)) == 0;
+}
+
 void sigio_handler(int signum) {
   (void)signum;
-  char buf[MSG_MAX_MSG_SIZE];
-  if (peer_queue != -1) {
-    struct msg_message_s msg = {.msg_type = MESSAGE, .msg_source = CLIENT};
-    strcpy(msg.message, buf);
-    msg_send_message_to(peer_queue, &msg);
-  }
-  scanf("%s", buf);
-  if (strcmp(buf, "LIST") == 0) {
+  char* buf = NULL;
+  size_t n;
+  getline(&buf, &n, stdin);
+  if (has_prefix(buf, "LIST")) {
     msg_send_list_to(server_queue);
-  } else if (strncmp(buf, "CONNECT", strlen("CONNECT")) == 0) {
+  } else if (has_prefix(buf, "CONNECT")) {
     int peer_client_id;
-    scanf("%d", &peer_client_id);
+    sscanf(buf, "CONNECT %d", &peer_client_id);
     msg_send_connect_to(server_queue, peer_client_id);
-  } else if (strcmp(buf, "DISCONNECT") == 0) {
+  } else if (has_prefix(buf, "DISCONNECT")) {
     msg_send_disconnect_to(server_queue);
-  } else if (strcmp(buf, "STOP") == 0) {
+  } else if (has_prefix(buf, "STOP")) {
     exit(0);
+  } else {
+    if (peer_queue != -1) {
+      struct msg_message_s msg = {.msg_type = MESSAGE, .msg_source = CLIENT};
+      strcpy(msg.message, buf);
+      msg_send_message_to(peer_queue, &msg);
+    }
   }
 }
 
 void exit_handler(void) {
+  if (peer_queue != -1) {
+    msg_send_disconnect_to(server_queue);
+  }
   msg_send_stop_to(server_queue);
 }
 
@@ -130,28 +138,30 @@ int main(void) {
 
   signal(SIGIO, sigio_handler);
   fcntl(STDIN_FILENO, F_SETOWN, getpid());
+  fcntl(STDIN_FILENO, F_SETFL, O_ASYNC);
 
   queue = msg_init_client_queue();
   server_queue = msg_get_server_queue();
   client_id = msg_send_init_to(server_queue, queue);
+  printf("== Creating a client with id: %ld ==\n", client_id);
   peer_queue = -1;
-  printf("[Client %ld] Got id\n", client_id);
   while (true) {
     struct msg_message_s message;
     msg_receive(queue, &message);
-    printf("Receved message with id %d", message.msg_type);
     switch (message.msg_type) {
       case STOP:
         exit(0);
         break;
       case CONNECT:
         peer_queue = message.connect.peer_queue;
+        printf("== Connected ==\n");
         break;
       case DISCONNECT:
         peer_queue = -1;
         break;
       case MESSAGE:
-        printf("%s\n", message.message);
+        printf("> %s", message.message);
+        break;
       default:
         break;
     }

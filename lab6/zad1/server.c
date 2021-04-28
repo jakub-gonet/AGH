@@ -49,9 +49,9 @@ msg_client_id_t msg_add_client(const msg_queue_id_t client_queue) {
 
 struct msg_client_s* msg_find_client(const msg_client_id_t client_id) {
   for (size_t i = 0; i < clients.size; ++i) {
-    struct msg_client_s client = clients.data[i];
-    if (client.id == client_id) {
-      return &client;
+    const struct msg_client_s client = clients.data[i];
+    if (client.id != -1 && client.id == client_id) {
+      return &clients.data[i];
     }
   }
   return NULL;
@@ -115,7 +115,7 @@ void msg_handle_list() {
       continue;
     }
     printf("Client id: %ld, queue id: %d, available: %s\n", client.id,
-           client.queue_id, msg_is_connected(client.id) ? "yes" : "no");
+           client.queue_id, msg_is_connected(client.id) ? "no" : "yes");
   }
 }
 

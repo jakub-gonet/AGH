@@ -17,7 +17,8 @@ enum msg_server_request_t {
   LIST = 30,
   CONNECT = 40,
   INIT = 50,
-  LAST = INIT
+  MESSAGE = 60,
+  LAST = MESSAGE
 };
 enum msg_message_source_t { SERVER, CLIENT };
 
@@ -39,6 +40,7 @@ struct msg_message_s {
       msg_client_id_t id_to_connect;
       msg_queue_id_t peer_queue;
     } connect;
+    char message[MSG_MAX_MSG_SIZE];
   };
 };
 

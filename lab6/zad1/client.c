@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <errno.h>
+#include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ipc.h>
@@ -9,14 +11,18 @@
 
 //   perror(strerror(errno));
 
-int msg_init_client_queue() {
+msg_client_id_t client_id;
+msg_queue_id_t server_queue;
+msg_queue_id_t queue;
+
+int msg_init_client_queue(void) {
   printf("Creating a client with a key %d\n", getpid());
   const int queue_id = msgget(getpid(), IPC_CREAT | IPC_EXCL | 0666);
   assert(queue_id != -1);
   return queue_id;
 }
 
-int msg_get_server_queue() {
+int msg_get_server_queue(void) {
   const int queue_id = msgget(MSG_SERVER_KEY, 0);
   assert(queue_id != -1);
   return queue_id;
@@ -41,17 +47,44 @@ msg_client_id_t msg_send_init_to(const msg_queue_id_t destination,
   struct msg_message_s return_message;
   do {
     msg_receive(own_queue, &return_message);
-    printf("type: %ld, source: %d\n", return_message.msg_type,
-           return_message.msg_source);
   } while (return_message.msg_type != INIT ||
            return_message.msg_source != SERVER);
   return return_message.init.client_id;
 }
 
+void msg_send_stop_to(const msg_queue_id_t destination) {
+  const struct msg_message_s msg = {
+      .msg_type = STOP, .msg_source = CLIENT, .stop = {.client_id = client_id}};
+  msg_send_message_to(destination, &msg);
+}
+
+void exit_handler(void) {
+  msg_send_stop_to(server_queue);
+}
+
+void sigint_handler(int signum) {
+  (void)signum;
+  exit(0);
+}
+
 int main(void) {
-  int queue = msg_init_client_queue();
-  int server_queue = msg_get_server_queue();
-  msg_client_id_t client_id = msg_send_init_to(server_queue, queue);
-  printf("[Client %d] Got id\n", client_id);
+  atexit(exit_handler);
+  signal(SIGINT, sigint_handler);
+
+  queue = msg_init_client_queue();
+  server_queue = msg_get_server_queue();
+  client_id = msg_send_init_to(server_queue, queue);
+  printf("[Client %ld] Got id\n", client_id);
+  while (true) {
+    struct msg_message_s message;
+    msg_receive(queue, &message);
+    switch (message.msg_type) {
+      case STOP:
+        exit(0);
+        break;
+      default:
+        break;
+    }
+  }
   return 0;
 }

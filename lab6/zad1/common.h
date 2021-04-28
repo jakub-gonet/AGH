@@ -9,14 +9,14 @@
 #define MSG_STRUCT_SIZE (sizeof(struct msg_message_s) - sizeof(long))
 
 typedef int msg_queue_id_t;
-typedef unsigned int msg_client_id_t;
+typedef ssize_t msg_client_id_t;
 
 enum msg_server_request_t {
-  STOP = 10L,
-  DISCONNECT = 20L,
-  LIST = 30L,
-  CONNECT = 40L,
-  INIT = 50L,
+  STOP = 10,
+  DISCONNECT = 20,
+  LIST = 30,
+  CONNECT = 40,
+  INIT = 50,
   LAST = INIT
 };
 enum msg_message_source_t { SERVER, CLIENT };
@@ -29,6 +29,9 @@ struct msg_message_s {
       msg_queue_id_t queue_id;
       msg_client_id_t client_id;
     } init;
+    struct msg_stop_s {
+      msg_client_id_t client_id;
+    } stop;
   };
 };
 

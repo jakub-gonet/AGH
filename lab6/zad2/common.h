@@ -5,9 +5,10 @@
 
 #define MSG_MAX_CLIENTS 50
 #define MSG_MAX_MSG_SIZE 100
+#define MSG_RECEIVED_SIZE 16000
 #define MSG_MAX_REQUEST_SIZE 512
-#define MSG_SERVER_PATH "/tmp/msg/server"
-#define MSG_CLIENT_PREFIX "/tmp/msg/client-"
+#define MSG_SERVER_PATH "/msg-server"
+#define MSG_CLIENT_PREFIX "/msg-client-"
 #define MSG_STRUCT_SIZE (sizeof(struct msg_message_s) - sizeof(long))
 
 typedef ssize_t msg_client_id_t;

@@ -2,18 +2,15 @@ CC     := gcc
 CFLAGS := -g -Wall -Wextra
 SHELL  := /bin/bash
 
-.PHONY: all test clean
+.PHONY: all clean
 
 all: server client
 
-client: client.c
+client: client.c common.h
 	$(CC) $(CFLAGS) client.c -o client -lrt
 
-server: server.c
+server: server.c common.h
 	$(CC) $(CFLAGS) server.c -o server -lrt
 
-test: server client
-
 clean:
-	./remove_queues.sh
-	$(RM) -r *.dSYM server client
+	$(RM) -r *.dSYM server client /dev/mqueue/msg-*

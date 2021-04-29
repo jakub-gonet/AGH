@@ -1,7 +1,7 @@
 #!/bin/bash
 
-IDS=`ipcs -q | grep 0x | cut -f2 -d" "`
+IDS=`ls /dev/mqueue/msg-*`
 
 for id in $IDS; do
-  ipcrm -q $id;
+  unlink $id
 done

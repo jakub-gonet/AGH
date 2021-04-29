@@ -1,62 +1,52 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <mqueue.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
 #include <unistd.h>
 #include "common.h"
 
 //   perror(strerror(errno));
 
 msg_client_id_t client_id;
-msg_queue_id_t server_queue;
-msg_queue_id_t queue;
-msg_queue_id_t peer_queue;
+mqd_t server_queue;
+mqd_t queue;
+mqd_t peer_queue;
 
-int msg_init_client_queue(void) {
-  const int queue_id = msgget(getpid(), IPC_CREAT | IPC_EXCL | 0666);
+mqd_t msg_init_client_queue(char name[50]) {
+  sprintf(name, "%s%d", MSG_CLIENT_PREFIX, getpid());
+  const mqd_t queue_id = mq_open(name, O_RDONLY | O_CREAT | O_EXCL, 0666, NULL);
   assert(queue_id != -1);
   return queue_id;
 }
 
-int msg_get_server_queue(void) {
-  const int queue_id = msgget(MSG_SERVER_KEY, 0);
+mqd_t msg_get_server_queue(void) {
+  const mqd_t queue_id = mq_open(MSG_SERVER_PATH, O_WRONLY);
   assert(queue_id != -1);
   return queue_id;
 }
 
-void msg_receive(const msg_queue_id_t from, struct msg_message_s* msg) {
-  int err;
-  do {
-    err = msgrcv(from, msg, MSG_STRUCT_SIZE, 0, 0);
-  } while (err < 0 && errno == EINTR);
-  if (errno == EINTR) {
-    errno = 0;
-  }
+void msg_receive(const mqd_t from, struct msg_message_s* msg) {
+  char buf[MSG_RECEIVED_SIZE];
+  mq_receive(from, buf, sizeof(buf), NULL);
+  memcpy(msg, buf, sizeof(*msg));
   assert(errno == 0);
 }
 
-void msg_send_message_to(const msg_queue_id_t queue,
-                         const struct msg_message_s* msg) {
-  int err;
-  do {
-    err = msgsnd(queue, msg, MSG_STRUCT_SIZE, 0);
-  } while (err < 0 && errno == EINTR);
-  if (errno == EINTR) {
-    errno = 0;
-  }
+void msg_send_message_to(const mqd_t queue, const struct msg_message_s* msg) {
+  mq_send(queue, (char*)msg, sizeof(*msg), msg->msg_type);
   assert(errno == 0);
 }
 
-msg_client_id_t msg_send_init_to(const msg_queue_id_t destination,
-                                 const msg_queue_id_t own_queue) {
-  const struct msg_message_s msg = {
-      .msg_type = INIT, .msg_source = CLIENT, .init = {.queue_id = own_queue}};
+msg_client_id_t msg_send_init_to(const mqd_t destination,
+                                 const mqd_t own_queue,
+                                 const char* name) {
+  struct msg_message_s msg = {.msg_type = INIT, .msg_source = CLIENT};
+  strcpy(msg.init.queue_name, name);
   msg_send_message_to(destination, &msg);
   struct msg_message_s return_message;
   do {
@@ -66,18 +56,18 @@ msg_client_id_t msg_send_init_to(const msg_queue_id_t destination,
   return return_message.init.client_id;
 }
 
-void msg_send_stop_to(const msg_queue_id_t destination) {
+void msg_send_stop_to(const mqd_t destination) {
   const struct msg_message_s msg = {
       .msg_type = STOP, .msg_source = CLIENT, .stop = {.client_id = client_id}};
   msg_send_message_to(destination, &msg);
 }
 
-void msg_send_list_to(const msg_queue_id_t destination) {
+void msg_send_list_to(const mqd_t destination) {
   const struct msg_message_s msg = {.msg_type = LIST, .msg_source = CLIENT};
   msg_send_message_to(destination, &msg);
 }
 
-void msg_send_connect_to(const msg_queue_id_t destination, int peer_client_id) {
+void msg_send_connect_to(const mqd_t destination, int peer_client_id) {
   const struct msg_message_s msg = {
       .msg_type = CONNECT,
       .msg_source = CLIENT,
@@ -85,7 +75,7 @@ void msg_send_connect_to(const msg_queue_id_t destination, int peer_client_id) {
   msg_send_message_to(destination, &msg);
 }
 
-void msg_send_disconnect_to(const msg_queue_id_t destination) {
+void msg_send_disconnect_to(const mqd_t destination) {
   const struct msg_message_s msg = {.msg_type = DISCONNECT,
                                     .msg_source = CLIENT,
                                     .disconnect.client_id = client_id};
@@ -136,13 +126,18 @@ int main(void) {
   atexit(exit_handler);
   signal(SIGINT, sigint_handler);
 
-  signal(SIGIO, sigio_handler);
+  struct sigaction act;
+  act.sa_handler = sigio_handler;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags = SA_RESTART;
+  sigaction(SIGIO, &act, NULL);
+
   fcntl(STDIN_FILENO, F_SETOWN, getpid());
   fcntl(STDIN_FILENO, F_SETFL, O_ASYNC);
-
-  queue = msg_init_client_queue();
+  char name[50];
+  queue = msg_init_client_queue(name);
   server_queue = msg_get_server_queue();
-  client_id = msg_send_init_to(server_queue, queue);
+  client_id = msg_send_init_to(server_queue, queue, name);
   printf("== Creating a client with id: %ld ==\n", client_id);
   peer_queue = -1;
   while (true) {

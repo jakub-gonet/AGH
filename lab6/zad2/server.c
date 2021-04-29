@@ -25,9 +25,7 @@ struct msg_clients_list_s {
 };
 
 void msg_send_message_to(const mqd_t queue, const struct msg_message_s* msg) {
-  char msg_serialized[MSG_MAX_REQUEST_SIZE];
-  memcpy(msg_serialized, msg, sizeof(*msg));
-  mq_send(queue, msg_serialized, sizeof(msg), msg->msg_type);
+  mq_send(queue, (char*)msg, sizeof(*msg), msg->msg_type);
   assert(errno == 0);
 }
 
@@ -83,9 +81,9 @@ bool msg_remove_client(const msg_client_id_t client_id) {
 }
 
 void msg_receive(const mqd_t from, struct msg_message_s* msg) {
-  char msg_serialized[MSG_MAX_REQUEST_SIZE];
-  mq_receive(from, msg_serialized, sizeof(msg), NULL);
-  memcpy(msg, msg_serialized, sizeof(*msg));
+  char buf[MSG_RECEIVED_SIZE];
+  mq_receive(from, buf, sizeof(buf), NULL);
+  memcpy(msg, buf, sizeof(*msg));
   assert(errno == 0);
   assert(msg->msg_source == CLIENT);
 }
@@ -199,7 +197,7 @@ int main(void) {
   while (true) {
     struct msg_message_s message;
     msg_receive(queue, &message);
-    // printf("Got message of type %ld\n", message.msg_type);
+    printf("Got message of type %ld\n", message.msg_type);
     switch (message.msg_type) {
       case INIT:
         msg_handle_init(&message);

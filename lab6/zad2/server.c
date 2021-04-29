@@ -15,6 +15,7 @@ mqd_t queue;
 
 struct msg_client_s {
   mqd_t queue_id;
+  char queue_name[50];
   msg_client_id_t id;
   struct msg_client_s* peer;
 };
@@ -36,7 +37,8 @@ mqd_t msg_init_server_queue(void) {
   return queue_id;
 }
 
-msg_client_id_t msg_add_client(const mqd_t client_queue) {
+msg_client_id_t msg_add_client(const mqd_t client_queue,
+                               const char* client_name) {
   static msg_client_id_t next_client_id = 0;
   if (clients.size + 1 >= MSG_MAX_CLIENTS) {
     exit(EXIT_FAILURE);
@@ -44,6 +46,7 @@ msg_client_id_t msg_add_client(const mqd_t client_queue) {
   const msg_client_id_t id = next_client_id++;
   clients.data[clients.size++] =
       (struct msg_client_s){.queue_id = client_queue, .id = id, .peer = NULL};
+  strcpy(clients.data[clients.size - 1].queue_name, client_name);
   return id;
 }
 
@@ -98,8 +101,9 @@ void msg_receive_of_type(const mqd_t from,
 
 void msg_handle_init(struct msg_message_s* message) {
   const mqd_t client_queue = mq_open(message->init.queue_name, O_WRONLY);
+  const char* client_name = message->init.queue_name;
   assert(client_queue != -1);
-  const msg_client_id_t client_id = msg_add_client(client_queue);
+  const msg_client_id_t client_id = msg_add_client(client_queue, client_name);
   const struct msg_message_s msg = {
       .msg_type = INIT, .msg_source = SERVER, .init = {.client_id = client_id}};
   msg_send_message_to(client_queue, &msg);
@@ -133,11 +137,10 @@ void msg_handle_connect(struct msg_message_s* message) {
   struct msg_client_s* target = msg_find_client(target_id);
   source->peer = target;
   target->peer = source;
-  struct msg_message_s msg = {.msg_type = CONNECT,
-                              .msg_source = SERVER,
-                              .connect = {.peer_queue = source->queue_id}};
+  struct msg_message_s msg = {.msg_type = CONNECT, .msg_source = SERVER};
+  strcpy(msg.connect.peer_queue, source->queue_name);
   msg_send_message_to(target->queue_id, &msg);
-  msg.connect.peer_queue = target->queue_id;
+  strcpy(msg.connect.peer_queue, target->queue_name);
   msg_send_message_to(source->queue_id, &msg);
 }
 

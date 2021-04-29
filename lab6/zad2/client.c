@@ -115,6 +115,9 @@ void exit_handler(void) {
     msg_send_disconnect_to(server_queue);
   }
   msg_send_stop_to(server_queue);
+  char name[50];
+  sprintf(name, "%s%d", MSG_CLIENT_PREFIX, getpid());
+  mq_unlink(name);
 }
 
 void sigint_handler(int signum) {
@@ -148,7 +151,8 @@ int main(void) {
         exit(0);
         break;
       case CONNECT:
-        peer_queue = message.connect.peer_queue;
+        peer_queue = mq_open(message.connect.peer_queue, O_WRONLY);
+        assert(peer_queue != -1);
         printf("== Connected ==\n");
         break;
       case DISCONNECT:

@@ -40,7 +40,7 @@ struct msg_message_s {
     struct msg_connect_s {
       msg_client_id_t client_id;
       msg_client_id_t id_to_connect;
-      mqd_t peer_queue;
+      char peer_queue[50];
     } connect;
     char message[MSG_MAX_MSG_SIZE];
   };

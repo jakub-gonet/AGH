@@ -7,10 +7,10 @@ SHELL  := /bin/bash
 all: server client
 
 client: client.c
-	$(CC) $(CFLAGS) client.c -o client
+	$(CC) $(CFLAGS) client.c -o client -lrt
 
 server: server.c
-	$(CC) $(CFLAGS) server.c -o server
+	$(CC) $(CFLAGS) server.c -o server -lrt
 
 test: server client
 

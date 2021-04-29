@@ -1,20 +1,20 @@
 #include <assert.h>
 #include <errno.h>
+#include <limits.h>
+#include <mqueue.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
 #include <unistd.h>
 #include "common.h"
 
 struct msg_clients_list_s clients;
-msg_queue_id_t queue;
+mqd_t queue;
 
 struct msg_client_s {
-  msg_queue_id_t queue_id;
+  mqd_t queue_id;
   msg_client_id_t id;
   struct msg_client_s* peer;
 };
@@ -24,19 +24,21 @@ struct msg_clients_list_s {
   size_t size;
 };
 
-void msg_send_message_to(const msg_queue_id_t queue,
-                         const struct msg_message_s* msg) {
-  msgsnd(queue, msg, MSG_STRUCT_SIZE, 0);
+void msg_send_message_to(const mqd_t queue, const struct msg_message_s* msg) {
+  char msg_serialized[MSG_MAX_REQUEST_SIZE];
+  memcpy(msg_serialized, msg, sizeof(*msg));
+  mq_send(queue, msg_serialized, sizeof(msg), msg->msg_type);
   assert(errno == 0);
 }
 
-msg_queue_id_t msg_init_server_queue(void) {
-  const int queue_id = msgget(MSG_SERVER_KEY, IPC_CREAT | IPC_EXCL | 0666);
+mqd_t msg_init_server_queue(void) {
+  const mqd_t queue_id =
+      mq_open(MSG_SERVER_PATH, O_RDONLY | O_CREAT | O_EXCL, 0666, NULL);
   assert(queue_id != -1);
   return queue_id;
 }
 
-msg_client_id_t msg_add_client(const msg_queue_id_t client_queue) {
+msg_client_id_t msg_add_client(const mqd_t client_queue) {
   static msg_client_id_t next_client_id = 0;
   if (clients.size + 1 >= MSG_MAX_CLIENTS) {
     exit(EXIT_FAILURE);
@@ -73,28 +75,32 @@ bool msg_remove_client(const msg_client_id_t client_id) {
   struct msg_client_s* client = msg_find_client(client_id);
   if (client != NULL) {
     client->id = -1;
-    msgctl(client->queue_id, IPC_RMID, NULL);
+    const int res = mq_close(client->queue_id);
+    assert(res != -1);
     return true;
   }
   return false;
 }
 
-void msg_receive(const msg_queue_id_t from, struct msg_message_s* msg) {
-  msgrcv(from, msg, MSG_STRUCT_SIZE, -INIT, 0);
+void msg_receive(const mqd_t from, struct msg_message_s* msg) {
+  char msg_serialized[MSG_MAX_REQUEST_SIZE];
+  mq_receive(from, msg_serialized, sizeof(msg), NULL);
+  memcpy(msg, msg_serialized, sizeof(*msg));
   assert(errno == 0);
   assert(msg->msg_source == CLIENT);
 }
 
-void msg_receive_of_type(const msg_queue_id_t from,
+void msg_receive_of_type(const mqd_t from,
                          struct msg_message_s* msg,
                          const enum msg_server_request_t type) {
-  msgrcv(from, msg, MSG_STRUCT_SIZE, type, 0);
-  assert(errno == 0);
-  assert(msg->msg_source == CLIENT);
+  do {
+    msg_receive(from, msg);
+  } while (msg->msg_type != type);
 }
 
 void msg_handle_init(struct msg_message_s* message) {
-  const msg_queue_id_t client_queue = message->init.queue_id;
+  const mqd_t client_queue = mq_open(message->init.queue_name, O_WRONLY);
+  assert(client_queue != -1);
   const msg_client_id_t client_id = msg_add_client(client_queue);
   const struct msg_message_s msg = {
       .msg_type = INIT, .msg_source = SERVER, .init = {.client_id = client_id}};
@@ -173,7 +179,7 @@ void msg_stop_all() {
 
 void exit_handler(void) {
   msg_stop_all();
-  msgctl(queue, IPC_RMID, NULL);
+  mq_unlink(MSG_SERVER_PATH);
 }
 
 void sigint_handler(int signum) {
@@ -182,9 +188,11 @@ void sigint_handler(int signum) {
 }
 
 int main(void) {
+  if (MQ_PRIO_MAX <= LAST) {
+    exit(1);
+  }
   atexit(exit_handler);
   signal(SIGINT, sigint_handler);
-
   queue = msg_init_server_queue();
   clients = (struct msg_clients_list_s){.data = {}, .size = 0};
 

@@ -27,6 +27,14 @@ init(_) ->
                     shutdown => 2000,
                     type => worker,
                     modules => []
+                },
+                #{
+                    id => 'Pollution server value collector',
+                    start => {pollution_value_collector, start_link, []},
+                    restart => transient,
+                    shutdown => 2000,
+                    type => worker,
+                    modules => []
                 }
             ]
         }}.

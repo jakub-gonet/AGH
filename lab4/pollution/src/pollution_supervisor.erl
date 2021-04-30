@@ -8,8 +8,7 @@ start_link() ->
         {local, ?MODULE},
         ?MODULE,
         []
-    ),
-    unlink(whereis(?MODULE)).
+    ).
 
 init(_) ->
     {ok,

@@ -5,7 +5,7 @@
 addSomeValues_test() ->
     Added = {{2021, 1, 1}, {12, 0, 0}},
 
-    pollution_server:start(),
+    pollution_server:start_link(),
     timer:sleep(200),
     ?assertMatch(ok, pollution_server:addStation("A", {0, 0})),
     ?assertMatch(ok, pollution_server:addValue("A", Added, "T1", 1)),
@@ -25,7 +25,7 @@ addAndGetSomeValues_test() ->
     Added = {{2021, 1, 1}, {12, 0, 0}},
     Added2 = {{2021, 2, 1}, {12, 0, 0}},
 
-    pollution_server:start(),
+    pollution_server:start_link(),
     timer:sleep(200),
     ?assertMatch(ok, pollution_server:addStation("A", {0, 0})),
     ?assertMatch(ok, pollution_server:addValue("A", Added, "T1", 1)),

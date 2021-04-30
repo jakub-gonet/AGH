@@ -64,22 +64,22 @@ handle_cast(crash, State) ->
 handle_call({addStation, Name, Coord}, _From, Monitor) ->
     case pollution:addStation(Name, Coord, Monitor) of
         {error, _} = Error -> {reply, Error, Monitor};
-        {ok, NewMonitor} -> {reply, ok, NewMonitor}
+        NewMonitor -> {reply, ok, NewMonitor}
     end;
 handle_call({addValue, StationId, Timestamp, MType, Measurement}, _From, Monitor) ->
     case pollution:addValue(StationId, Timestamp, MType, Measurement, Monitor) of
         {error, _} = Error -> {reply, Error, Monitor};
-        {ok, NewMonitor} -> {reply, ok, NewMonitor}
+        NewMonitor -> {reply, ok, NewMonitor}
     end;
 handle_call({removeStation, StationId}, _From, Monitor) ->
     case pollution:removeStation(StationId, Monitor) of
         {error, _} = Error -> {reply, Error, Monitor};
-        {ok, NewMonitor} -> {reply, ok, NewMonitor}
+        NewMonitor -> {reply, ok, NewMonitor}
     end;
 handle_call({removeValue, StationId, Timestamp, MType}, _From, Monitor) ->
     case pollution:removeValue(StationId, Timestamp, MType, Monitor) of
         {error, _} = Error -> {reply, Error, Monitor};
-        {ok, NewMonitor} -> {reply, ok, NewMonitor}
+        NewMonitor -> {reply, ok, NewMonitor}
     end;
 handle_call({getDailyMean, Date, MType}, _From, Monitor) ->
     Reply = pollution:getDailyMean(Date, MType, Monitor),

@@ -16,7 +16,9 @@ stop() -> gen_statem:stop(?MODULE).
 callback_mode() -> state_functions.
 
 station_unset({call, From}, {set_station, Station_id}, {nil, []}) ->
-    {next_state, station_set, {Station_id, []}, [{reply, From, ok}]}.
+    {next_state, station_set, {Station_id, []}, [{reply, From, ok}]};
+station_unset({call, From}, _, Data) ->
+    {keep_state, Data, [{reply, From, {error, invalid_state_transition}}]}.
 
 station_set({call, From}, {add_value, To_add}, {Station_id, Values}) ->
     {keep_state, {Station_id, [To_add | Values]}, [{reply, From, ok}]};
@@ -35,4 +37,6 @@ station_set({call, From}, store_data, {Station_id, Values}) ->
             [] -> ok;
             Errors -> {error, Errors}
         end,
-    {next_state, station_unset, {nil, []}, [{reply, From, Reply}]}.
+    {next_state, station_unset, {nil, []}, [{reply, From, Reply}]};
+station_set({call, From}, _, Data) ->
+    {keep_state, Data, [{reply, From, {error, invalid_state_transition}}]}.

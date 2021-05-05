@@ -25,7 +25,7 @@ station_set({call, From}, {add_value, To_add}, {Station_id, Values}) ->
 station_set({call, From}, store_data, {Station_id, Values}) ->
     With_errors = lists:filtermap(
         fun({Timestamp, M_type, Measurement} = X) ->
-            case pollution_server:addValue(Station_id, Timestamp, M_type, Measurement) of
+            case pollution_server:add_value(Station_id, Timestamp, M_type, Measurement) of
                 ({error, Reason}) -> {true, {error, Reason, X}};
                 (_) -> false
             end

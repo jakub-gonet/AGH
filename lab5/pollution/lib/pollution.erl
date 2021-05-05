@@ -1,31 +1,31 @@
 -module(pollution).
 
 -export([
-    addStation/3,
-    addValue/5,
-    createMonitor/0,
-    getDailyMean/3,
-    getMinimumPollutionStation/2,
-    getMostActiveStation/2,
-    getOneValue/4,
-    getStationMean/3,
-    removeStation/2,
-    removeValue/4
+    add_station/3,
+    add_value/5,
+    create_monitor/0,
+    get_daily_mean/3,
+    get_minimum_pollution_station/2,
+    get_most_active_station/2,
+    get_one_value/4,
+    get_station_mean/3,
+    remove_station/2,
+    remove_value/4
 ]).
 
 -include("monitor.hrl").
 
-createMonitor() ->
+create_monitor() ->
     #monitor{}.
 
-addStation(Name, Coord, #monitor{data = D, coordToName = C}) when
+add_station(Name, Coord, #monitor{data = D, coordToName = C}) when
     is_map_key(Name, D); is_map_key(Coord, C)
 ->
     {error, duplicate_station};
-addStation(Name, Coord, #monitor{coordToName = C, data = D}) ->
+add_station(Name, Coord, #monitor{coordToName = C, data = D}) ->
     #monitor{coordToName = C#{Coord => Name}, data = D#{Name => #{}}}.
 
-addValue(StationId, Timestamp, MType, Measurement, Monitor) ->
+add_value(StationId, Timestamp, MType, Measurement, Monitor) ->
     updateStationData(
         StationId,
         fun(StationData) ->
@@ -39,7 +39,7 @@ addValue(StationId, Timestamp, MType, Measurement, Monitor) ->
         Monitor
     ).
 
-removeValue(StationId, Timestamp, MType, Monitor) ->
+remove_value(StationId, Timestamp, MType, Monitor) ->
     updateStationData(
         StationId,
         fun(StationData) ->
@@ -53,7 +53,7 @@ removeValue(StationId, Timestamp, MType, Monitor) ->
         Monitor
     ).
 
-getOneValue(StationId, Timestamp, MType, Monitor) ->
+get_one_value(StationId, Timestamp, MType, Monitor) ->
     runOnStationData(
         StationId,
         fun({_, StationData}) ->
@@ -62,7 +62,7 @@ getOneValue(StationId, Timestamp, MType, Monitor) ->
         Monitor
     ).
 
-getStationMean(StationId, MType, Monitor) ->
+get_station_mean(StationId, MType, Monitor) ->
     TypeFilter = fun({_, T}) -> T == MType end,
     runOnStationData(
         StationId,
@@ -70,7 +70,7 @@ getStationMean(StationId, MType, Monitor) ->
         Monitor
     ).
 
-getDailyMean({Date, _}, MType, #monitor{data = Data}) ->
+get_daily_mean({Date, _}, MType, #monitor{data = Data}) ->
     DayAndTypeFilter = fun({{D, _}, T}) -> T == MType andalso D == Date end,
     mean(
         getMeasurements(
@@ -87,7 +87,7 @@ getDailyMean({Date, _}, MType, #monitor{data = Data}) ->
 
 % suprise assignment
 
-getMinimumPollutionStation(MType, #monitor{data = D} = M) ->
+get_minimum_pollution_station(MType, #monitor{data = D} = M) ->
     TypeFilter = fun({_, T}) -> T == MType end,
     MinOnStation =
         fun(StationId) ->
@@ -104,7 +104,7 @@ getMinimumPollutionStation(MType, #monitor{data = D} = M) ->
 % Removes station from monitoring.
 %
 % Returns updated nonitor if station exists, {error, station_not_found} otherwise.
-removeStation(StationId, #monitor{coordToName = C, data = D} = M) ->
+remove_station(StationId, #monitor{coordToName = C, data = D} = M) ->
     case getCoordsFrom(StationId, M) of
         {error, _} = E ->
             E;
@@ -117,7 +117,7 @@ removeStation(StationId, #monitor{coordToName = C, data = D} = M) ->
 %
 % Returns list with found station (or multiple stations in case of ties) or empty list otherwise.
 
-getMostActiveStation({Date, _}, #monitor{data = D} = M) ->
+get_most_active_station({Date, _}, #monitor{data = D} = M) ->
     MeasuredOnDay =
         fun(StationData) ->
             getMeasurements(

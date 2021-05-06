@@ -70,7 +70,7 @@ get_station_mean(StationId, MType, Monitor) ->
         Monitor
     ).
 
-get_daily_mean({Date, _}, MType, #monitor{data = Data}) ->
+get_daily_mean(Date, MType, #monitor{data = Data}) ->
     DayAndTypeFilter = fun({{D, _}, T}) -> T == MType andalso D == Date end,
     mean(
         getMeasurements(

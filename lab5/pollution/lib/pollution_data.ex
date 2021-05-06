@@ -43,16 +43,14 @@ defmodule Pollution.Data do
   end
 
   defp identify_stations(parsed) do
-    parsed
-    |> Enum.map(fn %{location: loc} -> loc end)
-    |> Enum.uniq()
+    Enum.uniq_by(parsed, fn %{location: loc} -> loc end)
   end
 
   defp get_station_id({long, lat}) do
     "station_#{long}_#{lat}"
   end
 
-  defp insert_station(loc) do
+  defp insert_station(%{location: loc}) do
     :pollution_server.add_station(get_station_id(loc), loc)
   end
 
@@ -66,10 +64,13 @@ defmodule Pollution.Data do
       |> import_CSV_data()
       |> Enum.map(&parse_line/1)
 
-    parsed
-    |> identify_stations()
-    |> Enum.map(&insert_station/1)
+    f = fn ->
+      parsed
+      |> identify_stations()
+      |> Enum.map(&insert_station/1)
+    end
 
-    Enum.map(parsed, &insert_measurement/1)
+    f2 = fn -> Enum.map(parsed, &insert_measurement/1) end
+    {:timer.tc(f) |> elem(0), :timer.tc(f2) |> elem(0)}
   end
 end

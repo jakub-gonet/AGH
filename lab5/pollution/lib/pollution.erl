@@ -105,11 +105,11 @@ get_minimum_pollution_station(MType, #monitor{data = D} = M) ->
 %
 % Returns updated nonitor if station exists, {error, station_not_found} otherwise.
 remove_station(StationId, #monitor{coordToName = C, data = D} = M) ->
-    case getCoordsFrom(StationId, M) of
+    case get_coords_from(StationId, M) of
         {error, _} = E ->
             E;
         {ok, Coord} ->
-            {ok, Name} = getNameFrom(Coord, M),
+            {ok, Name} = get_name_from(Coord, M),
             #monitor{coordToName = maps:remove(Coord, C), data = maps:remove(Name, D)}
     end.
 
@@ -211,30 +211,30 @@ updateStationData(StationId, UpdateF, #monitor{data = D} = M) ->
     ).
 
 runOnStationData(StationId, F, #monitor{data = D} = M) ->
-    case getNameFrom(StationId, M) of
+    case get_name_from(StationId, M) of
         {error, _} = E ->
             E;
         {ok, Name} ->
             F({Name, maps:get(Name, D)})
     end.
 
-getNameFrom(StationId, #monitor{data = D, coordToName = C}) when
+get_name_from(StationId, #monitor{data = D, coordToName = C}) when
     not is_map_key(StationId, D), not is_map_key(StationId, C)
 ->
     {error, station_not_found};
-getNameFrom(Name, _) when is_list(Name) ->
+get_name_from(Name, _) when is_list(Name) ->
     {ok, Name};
-getNameFrom(Coord, #monitor{coordToName = C}) when is_tuple(Coord) ->
+get_name_from(Coord, #monitor{coordToName = C}) when is_tuple(Coord) ->
     {ok, maps:get(Coord, C)}.
 
 % Linear search in all stations - used only in station removal, number of stations should be small.
 % If that's not the case then add reverse mapping in monitor and reimplement this function
-getCoordsFrom(StationId, #monitor{data = D, coordToName = C}) when
+get_coords_from(StationId, #monitor{data = D, coordToName = C}) when
     not is_map_key(StationId, D), not is_map_key(StationId, C)
 ->
     {error, station_not_found};
-getCoordsFrom(Coord, _) when is_tuple(Coord) ->
+get_coords_from(Coord, _) when is_tuple(Coord) ->
     {ok, Coord};
-getCoordsFrom(Name, #monitor{coordToName = C}) when is_list(Name) ->
+get_coords_from(Name, #monitor{coordToName = C}) when is_list(Name) ->
     {value, {Coord, _}} = lists:search(fun({_, N}) -> N == Name end, maps:to_list(C)),
     {ok, Coord}.

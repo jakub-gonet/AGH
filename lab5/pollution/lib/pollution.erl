@@ -26,7 +26,7 @@ add_station(Name, Coord, #monitor{coordToName = C, data = D}) ->
     #monitor{coordToName = C#{Coord => Name}, data = D#{Name => #{}}}.
 
 add_value(StationId, Timestamp, MType, Measurement, Monitor) ->
-    updateStationData(
+    update_station_data(
         StationId,
         fun(StationData) ->
             case maps:is_key({Timestamp, MType}, StationData) of
@@ -40,7 +40,7 @@ add_value(StationId, Timestamp, MType, Measurement, Monitor) ->
     ).
 
 remove_value(StationId, Timestamp, MType, Monitor) ->
-    updateStationData(
+    update_station_data(
         StationId,
         fun(StationData) ->
             case maps:is_key({Timestamp, MType}, StationData) of
@@ -54,7 +54,7 @@ remove_value(StationId, Timestamp, MType, Monitor) ->
     ).
 
 get_one_value(StationId, Timestamp, MType, Monitor) ->
-    runOnStationData(
+    run_on_station_data(
         StationId,
         fun({_, StationData}) ->
             maps:get({Timestamp, MType}, StationData, {error, measurement_not_found})
@@ -64,7 +64,7 @@ get_one_value(StationId, Timestamp, MType, Monitor) ->
 
 get_station_mean(StationId, MType, Monitor) ->
     TypeFilter = fun({_, T}) -> T == MType end,
-    runOnStationData(
+    run_on_station_data(
         StationId,
         fun({_, StationData}) -> mean(getMeasurements(TypeFilter, StationData)) end,
         Monitor
@@ -91,7 +91,7 @@ get_minimum_pollution_station(MType, #monitor{data = D} = M) ->
     TypeFilter = fun({_, T}) -> T == MType end,
     MinOnStation =
         fun(StationId) ->
-            runOnStationData(
+            run_on_station_data(
                 StationId,
                 fun({_, StationData}) -> min(getMeasurements(TypeFilter, StationData)) end,
                 M
@@ -132,7 +132,7 @@ get_most_active_station({Date, _}, #monitor{data = D} = M) ->
         end,
     GetLength =
         fun(StationId) ->
-            runOnStationData(
+            run_on_station_data(
                 StationId,
                 fun({Name, StationData}) -> {Name, length(MeasuredOnDay(StationData))} end,
                 M
@@ -196,8 +196,8 @@ mean([]) ->
 mean(Measurements) ->
     lists:sum(Measurements) / length(Measurements).
 
-updateStationData(StationId, UpdateF, #monitor{data = D} = M) ->
-    runOnStationData(
+update_station_data(StationId, UpdateF, #monitor{data = D} = M) ->
+    run_on_station_data(
         StationId,
         fun({Name, StationData}) ->
             case UpdateF(StationData) of
@@ -210,7 +210,7 @@ updateStationData(StationId, UpdateF, #monitor{data = D} = M) ->
         M
     ).
 
-runOnStationData(StationId, F, #monitor{data = D} = M) ->
+run_on_station_data(StationId, F, #monitor{data = D} = M) ->
     case get_name_from(StationId, M) of
         {error, _} = E ->
             E;
@@ -222,7 +222,7 @@ get_name_from(StationId, #monitor{data = D, coordToName = C}) when
     not is_map_key(StationId, D), not is_map_key(StationId, C)
 ->
     {error, station_not_found};
-get_name_from(Name, _) when is_list(Name) ->
+get_name_from(Name, _) when is_list(Name); is_binary(Name) ->
     {ok, Name};
 get_name_from(Coord, #monitor{coordToName = C}) when is_tuple(Coord) ->
     {ok, maps:get(Coord, C)}.
@@ -235,6 +235,6 @@ get_coords_from(StationId, #monitor{data = D, coordToName = C}) when
     {error, station_not_found};
 get_coords_from(Coord, _) when is_tuple(Coord) ->
     {ok, Coord};
-get_coords_from(Name, #monitor{coordToName = C}) when is_list(Name) ->
+get_coords_from(Name, #monitor{coordToName = C}) when is_list(Name); is_binary(Name) ->
     {value, {Coord, _}} = lists:search(fun({_, N}) -> N == Name end, maps:to_list(C)),
     {ok, Coord}.

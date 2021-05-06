@@ -70,7 +70,6 @@ defmodule Pollution.Data do
     |> identify_stations()
     |> Enum.map(&insert_station/1)
 
-    [x | _] = parsed
-    Enum.map([x], &insert_measurement/1)
+    Enum.map(parsed, &insert_measurement/1)
   end
 end

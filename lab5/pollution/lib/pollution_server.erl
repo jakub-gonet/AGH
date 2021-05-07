@@ -5,6 +5,7 @@
     start_link/0,
     crash/0,
     stop/0,
+    flush_monitor/0,
     add_station/2,
     add_value/4,
     get_daily_mean/2,
@@ -54,6 +55,8 @@ remove_station(StationId) ->
 remove_value(StationId, Timestamp, MType) ->
     gen_server:call(?MODULE, {remove_value, StationId, Timestamp, MType}).
 
+flush_monitor() -> gen_server:call(?MODULE, flush_monitor).
+
 handle_cast(crash, State) ->
     throw("oh no"),
     "anyway",
@@ -95,4 +98,6 @@ handle_call({get_one_value, StationId, Timestamp, MType}, _From, Monitor) ->
     {reply, Reply, Monitor};
 handle_call({get_station_mean, StationId, MType}, _From, Monitor) ->
     Reply = pollution:get_station_mean(StationId, MType, Monitor),
-    {reply, Reply, Monitor}.
+    {reply, Reply, Monitor};
+handle_call(flush_monitor, _From, Monitor) ->
+    {reply, Monitor, pollution:create_monitor()}.

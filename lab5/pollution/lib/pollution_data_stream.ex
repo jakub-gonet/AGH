@@ -1,12 +1,7 @@
 defmodule Pollution.Data.Stream do
-  defp import_CSV_data(filename) do
-    filename
-    |> File.read!()
-    |> String.split("\r\n")
-  end
-
   defp parse_line(line) when is_binary(line) do
     line
+    |> String.trim()
     |> String.split(",")
     |> parse_line()
   end
@@ -34,16 +29,13 @@ defmodule Pollution.Data.Stream do
     end
 
     %{
+      str: Enum.join([date, time, long, lat, level], ","),
       datetime:
         {date |> to_iso_date.() |> Date.from_iso8601!() |> Date.to_erl(),
          time |> to_iso_time.() |> Time.from_iso8601!() |> Time.to_erl()},
       location: {String.to_float(long), String.to_float(lat)},
       pollution_level: String.to_integer(level)
     }
-  end
-
-  defp identify_stations(parsed) do
-    Enum.uniq_by(parsed, fn %{location: loc} -> loc end)
   end
 
   defp get_station_id({long, lat}) do
@@ -59,18 +51,28 @@ defmodule Pollution.Data.Stream do
   end
 
   def load_data(filename) do
-    parsed =
-      filename
-      |> import_CSV_data()
-      |> Enum.map(&parse_line/1)
+    filename
+    |> File.stream!()
+    |> Stream.map(&parse_line/1)
+    |> Stream.map(fn data ->
+      station_retval =
+        case insert_station(data) do
+          :ok -> :ok
+          {:error, :duplicate_station} -> :ok
+          {:error, _} = e -> e
+        end
 
-    f = fn ->
-      parsed
-      |> identify_stations()
-      |> Enum.map(&insert_station/1)
+      measurement_retval = insert_measurement(data)
+
+      %{station: station_retval, measurement: measurement_retval}
+    end)
+    |> Enum.reduce([], fn
+      %{station: :ok, measurement: :ok}, ret_acc -> ret_acc
+      err, ret_acc -> [err | ret_acc]
+    end)
+    |> case do
+      [] -> :ok
+      err -> {:error, err}
     end
-
-    f2 = fn -> Enum.map(parsed, &insert_measurement/1) end
-    {:timer.tc(f) |> elem(0), :timer.tc(f2) |> elem(0)}
   end
 end

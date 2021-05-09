@@ -11,8 +11,8 @@
 int get_child_code(void)
 {
     int ret_val;
-    wait(&ret_val);
-    return WEXITSTATUS(ret_val);
+    int ret = wait(&ret_val);
+    return ret != -1 ? WEXITSTATUS(ret_val) : -1;
 }
 
 void spawn_fib(int n)

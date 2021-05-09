@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+// DODANE
 void sighandler(int sig_num, siginfo_t *info, void *ctx)
 {
-    printf("%d\n", info->si_value.sival_int);
+    printf("sig: %d, num: %d\n", sig_num, info->si_value.sival_int);
 }
-
 int to_int(char *str)
 {
     errno = 0;
@@ -17,6 +17,7 @@ int to_int(char *str)
     assert(errno == 0);
     return val;
 }
+// -----------
 
 int main(int argc, char *argv[])
 {

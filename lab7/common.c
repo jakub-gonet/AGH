@@ -74,6 +74,7 @@ pizza_t p_get_from_table(struct table_s* table) {
   }
   --table->size;
   pizza_t pizza = table->pizzas[next_idx];
+  table->pizzas[next_idx] = EMPTY_SLOT;
   assert(pizza != EMPTY_SLOT);
   return pizza;
 }

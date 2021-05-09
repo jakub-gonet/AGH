@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 #include "common.h"
 
 static volatile sig_atomic_t keep_running = 1;
@@ -30,7 +31,14 @@ void p_delivering_pizza_msg(pid_t pid, int pizza_type) {
 
 int main(void) {
   signal(SIGINT, sig_handler);
+  pid_t self = getpid();
   while (keep_running) {
+    int pizza_type = p_get_pizza_from_table();
+    p_getting_pizza_from_table_msg(self, pizza_type, p_get_pizzas_on_table_n());
+    usleep(400 * 1e3);
+
+    p_delivering_pizza_msg(self, pizza_type);
+    usleep(400 * 1e3);
   }
 
   return EXIT_SUCCESS;

@@ -11,13 +11,11 @@
 typedef int pizza_t;
 
 struct oven_s {
-  size_t size;
   size_t next_idx;
   pizza_t pizzas[OVEN_SIZE];
 };
 
 struct table_s {
-  size_t size;
   size_t next_idx;
   pizza_t pizzas[TABLE_SIZE];
 };

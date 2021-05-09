@@ -5,6 +5,8 @@
 #define OVEN_SIZE 5
 #define TABLE_SIZE 5
 #define EMPTY_SLOT 0xaa
+#define PIZZA_WORKER_EXEC "pizza_worker"
+#define DELIVERY_WORKER_EXEC "delivery_worker"
 
 typedef int pizza_t;
 

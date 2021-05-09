@@ -13,31 +13,33 @@ void sig_handler(int signum) {
 }
 
 void p_getting_pizza_from_table_msg(pid_t pid,
-                                    int pizza_type,
-                                    int pizzas_on_table) {
+                                    pizza_t pizza_type,
+                                    size_t pizzas_on_table) {
   time_t s;
   long ms;
   p_get_current_time(&s, &ms);
-  printf("[%d] [%ld.%ld] Getting pizza: %d, number of pizzas on table: %d\n",
-         pid, s, ms, pizza_type, pizzas_on_table);
+  printf(
+      "[%d] [%ld.%ld] Getting the pizza: %d, number of pizzas on the table: "
+      "%ld\n",
+      pid, s, ms, pizza_type, pizzas_on_table);
 }
 
-void p_delivering_pizza_msg(pid_t pid, int pizza_type) {
+void p_delivering_pizza_msg(pid_t pid, pizza_t pizza_type) {
   time_t s;
   long ms;
   p_get_current_time(&s, &ms);
-  printf("[%d] [%ld.%ld] Delivering pizza: %d\n", pid, s, ms, pizza_type);
+  printf("[%d] [%ld.%ld] Delivering the pizza: %d\n", pid, s, ms, pizza_type);
 }
 
 int main(void) {
   signal(SIGINT, sig_handler);
   pid_t self = getpid();
   while (keep_running) {
-    int pizza_type = p_get_pizza_from_table();
-    p_getting_pizza_from_table_msg(self, pizza_type, p_get_pizzas_on_table_n());
+    pizza_t pizza = p_get_pizza_from_table();
+    p_getting_pizza_from_table_msg(self, pizza, p_get_pizzas_on_table_n());
     usleep(400 * 1e3);
 
-    p_delivering_pizza_msg(self, pizza_type);
+    p_delivering_pizza_msg(self, pizza);
     usleep(400 * 1e3);
   }
 

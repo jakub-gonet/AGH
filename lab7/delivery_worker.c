@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+
 #include "common.h"
 
 static volatile sig_atomic_t keep_running = 1;
@@ -35,8 +36,9 @@ int main(void) {
   signal(SIGINT, sig_handler);
   pid_t self = getpid();
   while (keep_running) {
-    pizza_t pizza = p_get_pizza_from_table();
-    p_getting_pizza_from_table_msg(self, pizza, p_get_pizzas_on_table_n());
+    pizza_t pizza = p_get_from_table(&table);
+    p_getting_pizza_from_table_msg(self, pizza,
+                                   p_get_pizzas_on_table_n(&table));
     usleep(400 * 1e3);
 
     p_delivering_pizza_msg(self, pizza);

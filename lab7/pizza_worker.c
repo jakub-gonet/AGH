@@ -43,13 +43,9 @@ void p_taking_pizza_msg(pid_t pid,
       pid, s, ms, pizza_type, pizzas_in_oven, pizzas_on_table);
 }
 
-int p_get_random_pizza(void) {
-  return rand() % 10;
-}
-
 int main(void) {
   signal(SIGINT, sig_handler);
-  srand(time(NULL));
+  p_init();
   pid_t self = getpid();
 
   while (keep_running) {
@@ -57,14 +53,13 @@ int main(void) {
     p_preparing_pizza_msg(self, pizza);
     usleep(200 * 1e3);
 
-    size_t pizza_index = p_place_in_oven(pizza);
-    assert(pizza_index >= 0 && pizza_index < OVEN_SIZE);
-    p_baking_pizza_msg(self, pizza, p_get_pizzas_in_oven_n());
+    size_t pizza_index = p_place_in_oven(&oven, pizza);
+    p_baking_pizza_msg(self, pizza, p_get_pizzas_in_oven_n(&oven));
     usleep(400 * 1e3);
 
-    p_place_on_table(p_get_from_oven(pizza_index));
-    p_taking_pizza_msg(self, pizza, p_get_pizzas_in_oven_n(),
-                       p_get_pizzas_on_table_n());
+    p_place_on_table(&table, p_get_from_oven(&oven, pizza_index));
+    p_taking_pizza_msg(self, pizza, p_get_pizzas_in_oven_n(&oven),
+                       p_get_pizzas_on_table_n(&table));
   }
 
   return EXIT_SUCCESS;

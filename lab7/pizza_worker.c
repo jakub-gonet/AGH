@@ -47,6 +47,7 @@ int main(void) {
   signal(SIGINT, sig_handler);
   p_init();
   pid_t self = getpid();
+  srand(self);
 
   while (keep_running) {
     pizza_t pizza = p_get_random_pizza();

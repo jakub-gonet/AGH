@@ -35,6 +35,8 @@ void p_delivering_pizza_msg(pid_t pid, pizza_t pizza_type) {
 int main(void) {
   signal(SIGINT, sig_handler);
   pid_t self = getpid();
+  srand(self);
+
   while (keep_running) {
     pizza_t pizza = p_get_from_table(&table);
     p_getting_pizza_from_table_msg(self, pizza,

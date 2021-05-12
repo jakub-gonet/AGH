@@ -36,6 +36,7 @@ int main(void) {
   signal(SIGINT, sig_handler);
   pid_t self = getpid();
   srand(self);
+  semaphors_id = p_get_semaphors();
 
   while (keep_running) {
     pizza_t pizza = p_get_from_table(&table);

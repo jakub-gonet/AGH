@@ -31,8 +31,8 @@ void p_init_structs(void) {
 void p_init_worker(struct oven_s** oven, struct table_s** table) {
   void* shared_mem = shmat(shared_mem_id, NULL, 0);
   assert(shared_mem != (void*)-1);
-  *oven = ((struct oven_s*)shared_mem);
-  *table = ((struct table_s*)(shared_mem + sizeof(struct oven_s)));
+  *oven = shared_mem;
+  *table = shared_mem + sizeof(struct oven_s);
 }
 
 void p_get_current_time(time_t* s, long* ms) {

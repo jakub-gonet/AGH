@@ -20,7 +20,6 @@ enum pizza_sem_e {
   TABLE_EMPTY_SLOTS_COUNT,
   pizza_sem_e_length
 };
-enum access_mode_e { OBTAIN = -1, RELEASE = 1 };
 
 struct oven_s {
   size_t next_idx;

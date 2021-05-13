@@ -36,12 +36,17 @@ int main(void) {
   signal(SIGINT, sig_handler);
   pid_t self = getpid();
   srand(self);
+
   semaphors_id = p_get_semaphors();
+  shared_mem_id = p_get_shared_mem();
+
+  struct oven_s* oven;
+  struct table_s* table;
+  p_init_worker(&oven, &table);
 
   while (keep_running) {
-    pizza_t pizza = p_get_from_table(&table);
-    p_getting_pizza_from_table_msg(self, pizza,
-                                   p_get_pizzas_on_table_n(&table));
+    pizza_t pizza = p_get_from_table(table);
+    p_getting_pizza_from_table_msg(self, pizza, p_get_pizzas_on_table_n(table));
     usleep(400 * 1e3);
 
     p_delivering_pizza_msg(self, pizza);

@@ -42,15 +42,37 @@ void spawn_delivery_worker(void) {
   }
 }
 
-int create_semaphors(void) {
+void set_semaphore_to(int id, enum pizza_sem_e what, int num) {
+  union semun {
+    int val;
+    struct semid_ds* buf;
+    unsigned short* array;
+    struct seminfo* __buf;
+  } op;
+  op.val = num;
+  semctl(id, what, SETVAL, op);
+  assert(id != -1);
+}
+
+int create_and_init_semaphors(void) {
   int id = semget(getpid(), pizza_sem_e_length,
+                  IPC_CREAT | IPC_EXCL | SEM_ACCESS_MODE);
+  // perror(strerror(errno));
+  assert(id != -1);
+  set_semaphore_to(id, OVEN_EMPTY_SLOTS_COUNT, OVEN_SIZE);
+  set_semaphore_to(id, TABLE_EMPTY_SLOTS_COUNT, OVEN_SIZE);
+  set_semaphore_to(id, OVEN, 1);
+  set_semaphore_to(id, TABLE, 1);
+  return id;
+}
+
+int create_shared_mem(void) {
+  int id = shmget(getpid(), sizeof(struct oven_s) + sizeof(struct table_s),
                   IPC_CREAT | IPC_EXCL | SEM_ACCESS_MODE);
   // perror(strerror(errno));
   assert(id != -1);
   return id;
 }
-
-int create_shared_mem(void) {}
 
 void remove_semaphors(void) {
   if (semaphors_id != -1) {
@@ -76,13 +98,13 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "Specify number of pizza workers and delivery workers\n");
     exit(EXIT_FAILURE);
   }
-  p_init();
 
   size_t pizza_workers_n = p_to_size_t(argv[1]);
   size_t delivery_workers_n = p_to_size_t(argv[2]);
 
-  semaphors_id = create_semaphors();
+  semaphors_id = create_and_init_semaphors();
   shared_mem_id = create_shared_mem();
+  p_init_structs();
 
   printf("Hiring %ld bakers\n", pizza_workers_n);
   for (size_t i = 0; i < pizza_workers_n; ++i) {

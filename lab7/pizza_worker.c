@@ -45,24 +45,28 @@ void p_taking_pizza_msg(pid_t pid,
 
 int main(void) {
   signal(SIGINT, sig_handler);
-  p_init();
   pid_t self = getpid();
   srand(self);
 
   semaphors_id = p_get_semaphors();
+  shared_mem_id = p_get_shared_mem();
+
+  struct oven_s* oven;
+  struct table_s* table;
+  p_init_worker(&oven, &table);
 
   while (keep_running) {
     pizza_t pizza = p_get_random_pizza();
     p_preparing_pizza_msg(self, pizza);
     usleep(200 * 1e3);
 
-    size_t pizza_index = p_place_in_oven(&oven, pizza);
-    p_baking_pizza_msg(self, pizza, p_get_pizzas_in_oven_n(&oven));
+    size_t pizza_index = p_place_in_oven(oven, pizza);
+    p_baking_pizza_msg(self, pizza, p_get_pizzas_in_oven_n(oven));
     usleep(400 * 1e3);
 
-    p_place_on_table(&table, p_get_from_oven(&oven, pizza_index));
-    p_taking_pizza_msg(self, pizza, p_get_pizzas_in_oven_n(&oven),
-                       p_get_pizzas_on_table_n(&table));
+    p_place_on_table(table, p_get_from_oven(oven, pizza_index));
+    p_taking_pizza_msg(self, pizza, p_get_pizzas_in_oven_n(oven),
+                       p_get_pizzas_on_table_n(table));
   }
 
   return EXIT_SUCCESS;

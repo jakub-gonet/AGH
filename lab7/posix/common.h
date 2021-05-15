@@ -1,5 +1,6 @@
 #if !defined(COMMON_H)
 #define COMMON_H
+#include <semaphore.h>
 #include <time.h>
 
 #define OVEN_SIZE 5
@@ -30,6 +31,14 @@ struct table_s {
   size_t next_idx;
   pizza_t pizzas[TABLE_SIZE];
 };
+
+struct semaphores_s {
+  sem_t oven;
+  sem_t table;
+  sem_t oven_empty_slots_count;
+  sem_t table_empty_slots_count;
+  sem_t table_full_slots_count;
+}
 
 extern int semaphors_id;
 extern int shared_mem_id;

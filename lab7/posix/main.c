@@ -55,8 +55,11 @@ void set_semaphore_to(int id, enum pizza_sem_e what, int num) {
 }
 
 int create_and_init_semaphors(void) {
-  int id = semget(getpid(), pizza_sem_e_length,
-                  IPC_CREAT | IPC_EXCL | SEM_ACCESS_MODE);
+  sem_init(&pizzeria->oven_door, true, 1);
+  sem_init(&pizzeria->oven_free, true, OVEN_CAP);
+  sem_init(&pizzeria->table_door, true, 1);
+  sem_init(&pizzeria->table_in_free, true, TABLE_CAP);
+  sem_init(&pizzeria->table_out_avail, true, 0);
   // perror(strerror(errno));
   assert(id != -1);
   set_semaphore_to(id, OVEN_EMPTY_SLOTS_COUNT, OVEN_SIZE);

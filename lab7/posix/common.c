@@ -1,11 +1,11 @@
 #include "common.h"
 #include <assert.h>
+#include <fcntl.h>
 #include <math.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <sys/shm.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #define _POSIX_C_SOURCE 200809L

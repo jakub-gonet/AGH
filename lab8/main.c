@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define PATH "result.pgm"
 
@@ -192,6 +193,10 @@ void save_pgm_image(const char* path,
   fclose(file);
 }
 
+long extract_nanos(struct timespec* timestamp) {
+  return timestamp->tv_sec * 1000000000 + timestamp->tv_nsec;
+}
+
 int main(int argc, char const* argv[]) {
   assert(argc == 3 + 1);
 
@@ -208,6 +213,8 @@ int main(int argc, char const* argv[]) {
     exit(EXIT_FAILURE);
   }
 
+  struct timespec start_time;
+  clock_gettime(CLOCK_MONOTONIC, &start_time);
   size_t width, height;
   unsigned char** image = load_pgm_image(input, &width, &height);
 
@@ -231,10 +238,17 @@ int main(int argc, char const* argv[]) {
     pthread_join(workers[i], NULL);
   }
 
+  struct timespec end_time;
+  clock_gettime(CLOCK_MONOTONIC, &end_time);
+  double result_time =
+      (extract_nanos(&end_time) - extract_nanos(&start_time)) / 1e9;
+  printf("CLOCKS_PER_SEC: %ld, result time: %f\n", CLOCKS_PER_SEC, result_time);
+
+  save_pgm_image(PATH, image, width, height);
+
   free(workers);
   free(args);
   free_thread_config(&threads_config);
-  save_pgm_image(PATH, image, width, height);
   free_image(image, height);
   return 0;
 }

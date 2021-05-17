@@ -1,3 +1,6 @@
+Dla modulo, wyniki niezbyt się różnią. Dla trybu kolumnowego widać, że najlepsze wyniki osiągamy dla 16 wątków, potem różnice są nieznaczne.
+Z teoretycznego punktu widzenia, najlepiej jest stworzyć tyle wątków ile mamy rdzeni procesora (jeżeli zadanie jest typu CPU bound) lub więcej jeżeli musimy czekać na operacje wyjścia-wejścia.
+
 MOD:
 CLOCKS_PER_SEC: 1000000, result time: 0.130669
 CLOCKS_PER_SEC: 1000000, result time: 0.128436

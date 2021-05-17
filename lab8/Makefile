@@ -11,7 +11,21 @@ main: main.c
 	$(CC) $(CFLAGS) main.c -o main -lpthread
 
 test: main
-	./main
+	$(RM) $(RAPORT_F)
+	echo 'MOD:' >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 1 mod >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 2 mod >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 4 mod >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 16 mod >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 64 mod >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 256 mod >> $(RAPORT_F)
+	echo 'COL:' >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 1 col >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 2 col >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 4 col >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 16 col >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 64 col >> $(RAPORT_F)
+	./main test/kabelki.ascii.pgm 256 col >> $(RAPORT_F)
 
 clean:
 	$(RM) main $(RAPORT_F)

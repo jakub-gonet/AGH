@@ -148,10 +148,6 @@ unsigned char** load_pgm_image(const char* input,
   FILE* file = fopen(input, "r");
   assert(file != NULL);
 
-  char* line = NULL;
-  size_t len = 0;
-  ssize_t read;
-
   load_pgm_header(file, width, height);
 
   unsigned char** image = malloc(sizeof(*image) * *height);
@@ -159,21 +155,13 @@ unsigned char** load_pgm_image(const char* input,
     image[i] = malloc(sizeof(**image) * *width);
   }
   assert(image != NULL);
-  for (size_t row = 0; (read = getline(&line, &len, file)) != -1; ++row) {
-    assert(row < *height);
-    int pos = 0;
+  for (size_t row = 0; row < *height; ++row) {
     for (size_t col = 0; col < *width; ++col) {
-      assert(pos < read);
-      int r;
-      sscanf(&line[pos], "%hhu%n", &image[row][col], &r);
-      pos += r;
+      fscanf(file, "%hhu", &image[row][col]);
     }
   }
 
   fclose(file);
-  if (line) {
-    free(line);
-  }
   return image;
 }
 
@@ -213,11 +201,10 @@ int main(int argc, char const* argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  struct timespec start_time;
-  clock_gettime(CLOCK_MONOTONIC, &start_time);
   size_t width, height;
   unsigned char** image = load_pgm_image(input, &width, &height);
-
+  struct timespec start_time;
+  clock_gettime(CLOCK_MONOTONIC, &start_time);
   struct iter_config_t threads_config =
       init_iter_thread_config(threads_n, width, height, mode);
 

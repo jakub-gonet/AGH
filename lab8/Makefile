@@ -12,6 +12,7 @@ main: main.c
 
 test: main
 	$(RM) $(RAPORT_F)
+	echo -e 'Dla modulo, wyniki niezbyt się różnią. Dla trybu kolumnowego widać, że najlepsze wyniki osiągamy dla 16 wątków, potem różnice są nieznaczne.\nZ teoretycznego punktu widzenia, najlepiej jest stworzyć tyle wątków ile mamy rdzeni procesora (jeżeli zadanie jest typu CPU bound) lub więcej jeżeli musimy czekać na operacje wyjścia-wejścia.' >> $(RAPORT_F)
 	echo 'MOD:' >> $(RAPORT_F)
 	./main test/kabelki.ascii.pgm 1 mod >> $(RAPORT_F)
 	./main test/kabelki.ascii.pgm 2 mod >> $(RAPORT_F)

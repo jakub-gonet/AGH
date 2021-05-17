@@ -36,6 +36,10 @@ size_t ceil_i(size_t x, size_t y) {
   return x / y + (x % y != 0);
 }
 
+long extract_nanos(struct timespec* timestamp) {
+  return timestamp->tv_sec * 1000000000 + timestamp->tv_nsec;
+}
+
 bool column_iter(struct iter_config_t* config, size_t thread_i) {
   assert(config->threads_n <= config->width);
   size_t end = ceil_i((thread_i + 1) * config->width, config->threads_n);
@@ -104,6 +108,9 @@ enum mode_t get_mode(const char* mode) {
 }
 
 void* invert_image(void* _args) {
+  struct timespec start_time;
+  clock_gettime(CLOCK_MONOTONIC, &start_time);
+
   struct invert_image_args* args = _args;
 
   unsigned char** image = args->image;
@@ -115,7 +122,10 @@ void* invert_image(void* _args) {
     const struct iter_thread_config_t config = threads_config->d[thread_i];
     image[config.row_i][config.col_i] = 255 - image[config.row_i][config.col_i];
   } while (iter_f(threads_config, thread_i));
-  return NULL;
+
+  struct timespec end_time;
+  clock_gettime(CLOCK_MONOTONIC, &end_time);
+  return (void*)(extract_nanos(&end_time) - extract_nanos(&start_time));
 }
 
 void load_pgm_header(FILE* image, size_t* width, size_t* height) {
@@ -181,10 +191,6 @@ void save_pgm_image(const char* path,
   fclose(file);
 }
 
-long extract_nanos(struct timespec* timestamp) {
-  return timestamp->tv_sec * 1000000000 + timestamp->tv_nsec;
-}
-
 int main(int argc, char const* argv[]) {
   assert(argc == 3 + 1);
 
@@ -222,14 +228,17 @@ int main(int argc, char const* argv[]) {
   }
 
   for (size_t i = 0; i < threads_n; ++i) {
-    pthread_join(workers[i], NULL);
+    void* time;
+    pthread_join(workers[i], &time);
+    printf("\t[%ld] Real time: %fus\n", i + 1, ((long)time) / 1.e6);
   }
 
   struct timespec end_time;
   clock_gettime(CLOCK_MONOTONIC, &end_time);
   double result_time =
-      (extract_nanos(&end_time) - extract_nanos(&start_time)) / 1e9;
-  printf("CLOCKS_PER_SEC: %ld, result time: %f\n", CLOCKS_PER_SEC, result_time);
+      (extract_nanos(&end_time) - extract_nanos(&start_time)) / 1e6;
+  printf("Program real time: %fus, number of threads: %ld\n", result_time,
+         threads_n);
 
   save_pgm_image(PATH, image, width, height);
 

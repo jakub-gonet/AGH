@@ -26,7 +26,10 @@
 			"type_traits": "c",
 			"unistd.h": "c",
 			"ipc.h": "c",
-			"mqueue.h": "c"
+			"mqueue.h": "c",
+			"math.h": "c",
+			"string.h": "c",
+			"cmath": "c"
 		}
 	}
 }

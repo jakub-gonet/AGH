@@ -8,7 +8,7 @@ RAPORT_F := raport.txt
 all: main
 
 main: main.c
-	$(CC) $(CFLAGS) main.c -o main
+	$(CC) $(CFLAGS) main.c -o main -lpthread
 
 test: main
 	./main

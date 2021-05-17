@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <errno.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +23,13 @@ struct iter_config_t {
 };
 
 typedef bool (*iter_config_f)(struct iter_config_t*, size_t);
+
+struct invert_image_args {
+  unsigned char** image;
+  iter_config_f iter_f;
+  struct iter_config_t* threads_config;
+  size_t thread_i;
+};
 
 size_t ceil_i(size_t x, size_t y) {
   return x / y + (x % y != 0);
@@ -52,10 +60,10 @@ size_t to_size_t(const char* str) {
   return val;
 }
 
-struct iter_config_t init_thread_config(size_t threads_n,
-                                        size_t width,
-                                        size_t height,
-                                        enum mode_t mode) {
+struct iter_config_t init_iter_thread_config(size_t threads_n,
+                                             size_t width,
+                                             size_t height,
+                                             enum mode_t mode) {
   struct iter_thread_config_t* config =
       malloc(sizeof(struct iter_thread_config_t) * threads_n);
 
@@ -94,24 +102,19 @@ enum mode_t get_mode(const char* mode) {
   }
 }
 
-void invert_image(unsigned char** image,
-                  const iter_config_f iter_f,
-                  struct iter_config_t* threads_config,
-                  const size_t thread_i) {
-  printf("[%ld] (%ld, %ld)\n", thread_i, threads_config->d[thread_i].row_i,
-         threads_config->d[thread_i].col_i);
+void* invert_image(void* _args) {
+  struct invert_image_args* args = _args;
+
+  unsigned char** image = args->image;
+  const iter_config_f iter_f = args->iter_f;
+  struct iter_config_t* threads_config = args->threads_config;
+  const size_t thread_i = args->thread_i;
+
   do {
     const struct iter_thread_config_t config = threads_config->d[thread_i];
-    // printf("Processing (%d, %d): %d -> %d\n", config.row_i, config.col_i,
-    //        image[config.row_i][config.col_i],
-    //        255 - image[config.row_i][config.col_i]);
-    // if (!(config.row_i < threads_config->height &&
-    //       config.col_i < threads_config->width)) {
-    //   printf("[%ld] (%ld, %ld)\n", thread_i, config.row_i, config.col_i);
-    //   exit(1);
-    // }
     image[config.row_i][config.col_i] = 255 - image[config.row_i][config.col_i];
   } while (iter_f(threads_config, thread_i));
+  return NULL;
 }
 
 void load_pgm_header(FILE* image, size_t* width, size_t* height) {
@@ -208,29 +211,28 @@ int main(int argc, char const* argv[]) {
   size_t width, height;
   unsigned char** image = load_pgm_image(input, &width, &height);
 
-  // for (size_t row = 0; row < height; ++row) {
-  //   for (size_t col = 0; col < width; col++) {
-  //     printf(image[row][col] == 0 ? "%3hhu " : "%4hhu", image[row][col]);
-  //   }
-  //   printf("\n");
-  // }
-
   struct iter_config_t threads_config =
-      init_thread_config(threads_n, width, height, mode);
+      init_iter_thread_config(threads_n, width, height, mode);
+
+  pthread_t* workers = malloc(sizeof(pthread_t) * threads_n);
+  struct invert_image_args* args =
+      malloc(sizeof(struct invert_image_args) * threads_n);
 
   for (size_t i = 0; i < threads_n; ++i) {
-    invert_image(image, config_f, &threads_config, i);
+    args[i] = (struct invert_image_args){.image = image,
+                                         .iter_f = config_f,
+                                         .threads_config = &threads_config,
+                                         .thread_i = i};
+    int ret_val = pthread_create(&workers[i], NULL, &invert_image, &args[i]);
+    assert(ret_val == 0);
   }
-  // printf("---\n");
 
-  // for (size_t row = 0; row < height; ++row) {
-  //   for (size_t col = 0; col < width; col++) {
-  //     printf(image[row][col] == 0 ? "%3hhu " : "%4hhu",
-  //            (unsigned)image[row][col]);
-  //   }
-  //   printf("\n");
-  // }
+  for (size_t i = 0; i < threads_n; ++i) {
+    pthread_join(workers[i], NULL);
+  }
 
+  free(workers);
+  free(args);
   free_thread_config(&threads_config);
   save_pgm_image(PATH, image, width, height);
   free_image(image, height);

@@ -20,8 +20,11 @@ int main(int argc, char* argv[]) {
   Utworz strukture adresowa ustawiajac adres/sciezke komunikacji na SOCK_PATH
   Polacz sie korzystajac ze zdefiniowanych socketu i struktury adresowej
   ***********************************************/
-
   int fd = -1;
+  fd = socket(AF_UNIX, SOCK_DGRAM, 0);
+  struct sockaddr_un rec_addr = {.sun_family = AF_UNIX};
+  strcpy(rec_addr.sun_path, SOCK_PATH);
+  connect(fd, (struct sockaddr*)&rec_addr, sizeof(rec_addr));
 
   char buff[20];
   int to_send = sprintf(buff, argv[1]);
@@ -33,5 +36,6 @@ int main(int argc, char* argv[]) {
   /*****************************
   posprzataj po sockecie
   ********************************/
+  close(fd);
   return 0;
 }

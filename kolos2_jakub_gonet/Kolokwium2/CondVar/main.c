@@ -14,10 +14,13 @@ int count = 0;
  */
 
 void* wait_for_counter(void* arg) {
+  pthread_mutex_lock(&mutex);
+  while (count < 1000) {
+    pthread_cond_wait(&var, &mutex);
+  }
   printf("Changing value: %d\n", count);
   count += 10;
-  //...
-
+  pthread_mutex_unlock(&mutex);
   pthread_exit(NULL);
 }
 
@@ -28,6 +31,7 @@ int main(void) {
     pthread_t tid;
     /* Stwórz nowy wątek wykonujący funkcje wait_for_counter.
      */
+    pthread_create(&tid, NULL, &wait_for_counter, NULL);
     int reps = 100000;
     for (int i = 0; i < reps; ++i) {
       pthread_mutex_lock(&mutex);
@@ -37,6 +41,7 @@ int main(void) {
     }
     /* Poczekaj na zakończenie stworzonego wątku.
      */
+    pthread_join(tid, NULL);
     pthread_mutex_lock(&mutex);
     if (count != reps + 10) {
       printf("Wrong value: %d\n", count);

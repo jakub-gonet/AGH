@@ -7,10 +7,10 @@ RAPORT_F := raport.txt
 
 all: server client
 
-server: server.c
+server: server.c common.h
 	$(CC) $(CFLAGS) server.c -o server -lpthread
 
-client: client.c
+client: client.c common.h
 	$(CC) $(CFLAGS) client.c -o client -lpthread
 
 clean:

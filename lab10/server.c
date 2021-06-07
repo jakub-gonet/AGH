@@ -4,16 +4,14 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common.h"
 
 #define MAX_CLIENTS 16
-#define GAME_SIZE 3
-
-enum cell_type { _, X = -1, O = 1 };
 
 struct game {
   struct client* first_player;
   struct client* second_player;
-  char area[GAME_SIZE][GAME_SIZE];
+  area_t area;
 };
 
 struct client {
@@ -57,6 +55,8 @@ enum cell_type check_for_win(struct game* game) {
 }
 
 void remove_client_by_name(char* client_name) {}
+
+struct game* find_waiting_oponent(void) {}
 
 bool has_client_by_name(struct clients* clients_list, const char* client_name) {
   for (size_t i = 0; i < clients_list->size; i++) {

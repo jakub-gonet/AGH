@@ -29,7 +29,9 @@
 			"mqueue.h": "c",
 			"math.h": "c",
 			"string.h": "c",
-			"cmath": "c"
+			"cmath": "c",
+			"stat.h": "c",
+			"socket.h": "c"
 		}
 	}
 }

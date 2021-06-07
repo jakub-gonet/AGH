@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "common.h"
@@ -25,11 +26,11 @@ struct clients {
 };
 
 enum cell_type check_for_win(struct game* game) {
+  int cross_sum = 0;
+  int rev_cross_sum = 0;
   for (size_t y = 0; y < GAME_SIZE; y++) {
     int row_sum = 0;
     int col_sum = 0;
-    int cross_sum = 0;
-    int rev_cross_sum = 0;
     for (size_t x = 0; x < GAME_SIZE; x++) {
       row_sum += game->area[y][x];
       col_sum += game->area[x][y];
@@ -49,9 +50,8 @@ enum cell_type check_for_win(struct game* game) {
         cross_sum == GAME_SIZE || rev_cross_sum == GAME_SIZE) {
       return O;
     }
-
-    return _;
   }
+  return _;
 }
 
 void remove_client_by_name(char* client_name) {}

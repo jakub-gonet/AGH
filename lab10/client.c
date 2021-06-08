@@ -17,6 +17,7 @@
 
 // Globals
 int socket_fd;
+int epoll_fd;
 
 int to_int(char* str) {
   errno = 0;
@@ -155,6 +156,7 @@ void terminate(int signum) {
 void unregister(void) {
   send_disconnect();
   close(socket_fd);
+  close(epoll_fd);
   printf("Goodbye!\n");
 }
 
@@ -180,7 +182,7 @@ int main(int argc, char* argv[]) {
 
   area_t area = {0};
 
-  int epoll_fd = epoll_init();
+  epoll_fd = epoll_init();
   printf("Waiting for oponent...\n");
   while (true) {
     struct epoll_event events[EVENTS_N];

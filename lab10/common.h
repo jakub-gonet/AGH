@@ -7,6 +7,9 @@
 
 #define GAME_SIZE 3
 #define MAX_NAME_SIZE 16
+#define LOCAL_SOCKET_PATH "local.socket"
+#define MAX_CONN 16
+
 enum game_end { TIE, WIN, LOSE };
 enum cell_type { _ = 0, X = -1, O = 1 };
 typedef enum cell_type area_t[GAME_SIZE][GAME_SIZE];

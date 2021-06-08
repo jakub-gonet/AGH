@@ -29,17 +29,21 @@ struct game {
 
 struct client {
   bool is_empty;
+  int fd;
   char name[MAX_NAME_SIZE];
   struct game* current_game;
 };
 
 struct clients {
   struct client clients[MAX_CLIENTS];
-  size_t size;
 };
 
 struct event_data {
-  enum event_type { new_connection, client_event } type;
+  enum event_type { socket_event, client_event } type;
+  union payload {
+    int socket;
+    struct client* client;
+  } payload;
 };
 
 // Globals
@@ -47,7 +51,6 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int web_socket_fd;
 int local_socket_fd;
 int epoll_fd;
-struct clients clients_list;
 // -------
 
 enum cell_type check_for_win(struct game* game) {
@@ -81,10 +84,19 @@ enum cell_type check_for_win(struct game* game) {
 
 void remove_client_by_name(char* client_name) {}
 
+struct client* find_first_empty_client(struct clients* clients) {
+  for (size_t i = 0; i < MAX_CLIENTS; i++) {
+    if (clients->clients[i].is_empty) {
+      return &clients->clients[i];
+    }
+  }
+  return NULL;
+}
+
 struct game* find_waiting_oponent(void) {}
 
 bool has_client_by_name(struct clients* clients_list, const char* client_name) {
-  for (size_t i = 0; i < clients_list->size; i++) {
+  for (size_t i = 0; i < MAX_CLIENTS; i++) {
     struct client client = clients_list->clients[i];
     if (!client.is_empty && strcmp(client.name, client_name) == 0) {
       return true;
@@ -100,38 +112,84 @@ int to_int(const char* str) {
   return val;
 }
 
-bool register_client(struct clients* clients_list, char* client_name) {
-  if (has_client_by_name(clients_list, client_name) ||
-      clients_list->size >= MAX_CLIENTS) {
-    return false;
+struct client* register_client_fd(struct clients* clients_list, int client_fd) {
+  struct client* client;
+  with(mutex) {
+    client = find_first_empty_client(clients_list);
+    if (client != NULL) {
+      struct client new_client = {.is_empty = false, .fd = client_fd};
+      memcpy(client, &new_client, sizeof(new_client));
+    }
   }
-  struct client client = {.is_empty = false};
-  client.current_game = find_waiting_oponent();
-  strncpy(client.name, client_name, sizeof(client.name));
-  memcpy(&clients_list->clients[clients_list->size++], &client, sizeof(client));
+  return client;
 }
 
-struct clients init_clients(void) {}
+void delete_client(struct client* client) {
+  with(mutex) {
+    client->is_empty = true;
+    // TODO
+    // client->current_game.
+  }
+}
 
-void ping_clients(struct clients* clients) {
+void handle_client_msg(/*TODO*/) {}
+
+struct clients init_clients(void) {
+  struct clients clients_list;
+  for (size_t i = 0; i < MAX_CLIENTS; i++) {
+    clients_list.clients[i] = (struct client){.is_empty = true};
+  }
+  return clients_list;
+}
+
+void* ping_clients(void* arg) {
+  struct clients* clients = arg;
   static struct message msg = {.type = msg_ping};
   while (true) {
     sleep(PING_INTERVAL);
     printf("Ping...\n");
     with(mutex) {
-      // TODO: ping all clients
+      for (size_t i = 0; i < MAX_CLIENTS; i++) {
+        struct client client = clients->clients[i];
+        if (!client.is_empty) {
+          // TODO
+        }
+      }
     }
   }
+  return NULL;
+}
+
+void send_msg(int fd, struct message* msg) {
+  write(fd, msg, sizeof(*msg));
+}
+
+void read_msg(int fd, struct message* msg) {
+  read(fd, msg, sizeof(*msg));
+}
+
+void send_username_taken(int fd) {
+  struct message msg = {.type = msg_username_taken};
+  send_msg(fd, &msg);
+}
+
+void send_server_full(int fd) {
+  struct message msg = {.type = msg_server_full};
+  send_msg(fd, &msg);
+}
+
+void epoll_client_fd(int fd, struct client* client) {
+  struct event_data event_data = {.type = client_event,
+                                  .payload.client = client};
+  struct epoll_event event = {.events = EPOLLIN | EPOLLET, .data = &event_data};
+  epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event);
 }
 
 void listen_to_socket(int socket, void* addr, int addr_size) {
-  safe(bind(socket, (struct sockaddr*)addr, addr_size));
-  safe(listen(socket, MAX_CONN));
+  bind(socket, (struct sockaddr*)addr, addr_size);
+  listen(socket, MAX_CLIENTS);
   struct epoll_event event = {.events = EPOLLIN | EPOLLPRI};
-  // TODO: socket event data
-  // event_data* event_data = event.data.ptr = malloc(sizeof *event_data);
-  // event_data->type = socket_event;
-  // event_data->payload.socket = socket;
+  struct event_data event_data = {.type = socket_event, .payload = socket};
   epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket, &event);
 }
 
@@ -142,23 +200,16 @@ int init_web_socket(int port) {
       .sin_port = htons(port),
       .sin_addr = {.s_addr = htonl(INADDR_ANY)},
   };
-  init_socket(web_fd, &web_addr, sizeof web_addr);
+  listen_to_socket(web_fd, &web_addr, sizeof web_addr);
   return web_fd;
 }
 
-int init_local_socket(char* socket_path) {
+int init_local_socket(const char* socket_path) {
   int local_fd = socket(AF_UNIX, SOCK_STREAM, 0);
   struct sockaddr_un local_addr = {.sun_family = AF_UNIX};
   strncpy(local_addr.sun_path, socket_path, sizeof local_addr.sun_path);
-  init_socket(local_fd, &local_addr, sizeof local_addr);
+  listen_to_socket(local_fd, &local_addr, sizeof local_addr);
   return local_fd;
-}
-
-int to_int(char* str) {
-  errno = 0;
-  int val = (int)strtol(str, NULL, 10);
-  assert(errno == 0);
-  return val;
 }
 
 void terminate(int signum) {
@@ -189,10 +240,10 @@ int main(int argc, char* argv[]) {
   epoll_fd = epoll_create(1);
   web_socket_fd = init_web_socket(port);
   local_socket_fd = init_local_socket(socket_path);
-  clients_list = init_clients();
+  struct clients clients_list = init_clients();
 
   pthread_t ping_thread;
-  pthread_create(&ping_thread, NULL, ping_clients, &clients_list);
+  pthread_create(&ping_thread, NULL, &ping_clients, &clients_list);
 
   while (true) {
     struct epoll_event events[MAX_CLIENTS];
@@ -200,9 +251,20 @@ int main(int argc, char* argv[]) {
     assert(n_ready >= 0);
     for (size_t i = 0; i < (size_t)n_ready; i++) {
       struct event_data* data = events[i].data.ptr;
-      if (data->type == new_connection) {
-        // TODO: create a client and register them
+      if (data->type == socket_event) {
+        int client_fd = accept(data->payload.socket, NULL, NULL);
+        struct client* client = register_client_fd(&clients_list, client_fd);
+        if (client != NULL) {
+          epoll_client_fd(client_fd, client);
+        } else {
+          send_server_full(client_fd);
+        }
       } else if (data->type == client_event) {
+        if (events[i].events & EPOLLHUP) {
+          delete_client(data->payload.client);
+        } else {
+          handle_client_msg();
+        }
         // TODO: handle client's request
       }
     }

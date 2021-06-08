@@ -178,11 +178,12 @@ int main(int argc, char* argv[]) {
     exit(EXIT_FAILURE);
   }
 
+  epoll_fd = epoll_init();
+
   send_register(name);
 
   area_t area = {0};
 
-  epoll_fd = epoll_init();
   printf("Waiting for oponent...\n");
   while (true) {
     struct epoll_event events[EVENTS_N];

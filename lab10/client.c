@@ -57,6 +57,7 @@ int connect_web(char* connection_path) {
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   assert(sock > 0);
   // connect
+  printf("Connecting to: %s\n", connection_path);
   ret = connect(sock, (struct sockaddr*)&addr, sizeof addr);
   assert(ret != -1);
   return sock;
@@ -68,6 +69,7 @@ int connect_unix(char* connection_path) {
   // create endpoint
   int sock = socket(AF_UNIX, SOCK_STREAM, 0);
   assert(sock > 0);
+  printf("Connecting to: %s\n", addr.sun_path);
   int ret = connect(sock, (struct sockaddr*)&addr, sizeof addr);
   assert(ret != -1);
   return sock;
@@ -157,7 +159,7 @@ void unregister(void) {
   send_disconnect();
   close(socket_fd);
   close(epoll_fd);
-  printf("Goodbye!\n");
+  printf("\nGoodbye!\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -194,6 +196,10 @@ int main(int argc, char* argv[]) {
         int cell_n = scanf("%d", &cell_n);
         send_move(cell_n);
       } else if (events[i].data.fd == socket_fd) {
+        if (events[i].events & EPOLLHUP) {
+          printf("Server disconnected\n");
+          exit(EXIT_FAILURE);
+        }
         struct message msg;
         read_msg(&msg);
         handle_msg(&msg, &area);

@@ -29,6 +29,7 @@ struct game {
 
 struct client {
   bool is_empty;
+  bool is_responding;
   int fd;
   char name[MAX_NAME_SIZE];
   struct game* current_game;
@@ -132,12 +133,15 @@ void delete_client(struct client* client) {
   }
 }
 
-void handle_client_msg(/*TODO*/) {}
+void handle_client_msg(/*TODO*/) {
+  // TODO: handle client's request
+}
 
 struct clients init_clients(void) {
   struct clients clients_list;
   for (size_t i = 0; i < MAX_CLIENTS; i++) {
-    clients_list.clients[i] = (struct client){.is_empty = true};
+    clients_list.clients[i] =
+        (struct client){.is_empty = true, .is_responding = true};
   }
   return clients_list;
 }
@@ -181,20 +185,26 @@ void send_server_full(int fd) {
 void epoll_client_fd(int fd, struct client* client) {
   struct event_data event_data = {.type = client_event,
                                   .payload.client = client};
-  struct epoll_event event = {.events = EPOLLIN | EPOLLET, .data = &event_data};
+  struct epoll_event event = {.events = EPOLLIN | EPOLLET,
+                              .data = {&event_data}};
   epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event);
 }
 
 void listen_to_socket(int socket, void* addr, int addr_size) {
-  bind(socket, (struct sockaddr*)addr, addr_size);
-  listen(socket, MAX_CLIENTS);
-  struct epoll_event event = {.events = EPOLLIN | EPOLLPRI};
-  struct event_data event_data = {.type = socket_event, .payload = socket};
+  int ret = bind(socket, (struct sockaddr*)addr, addr_size);
+  assert(ret != -1);
+  ret = listen(socket, MAX_CLIENTS);
+  assert(ret != -1);
+  struct event_data event_data = {.type = socket_event,
+                                  .payload.socket = socket};
+  struct epoll_event event = {.events = EPOLLIN | EPOLLPRI,
+                              .data = {&event_data}};
   epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket, &event);
 }
 
 int init_web_socket(int port) {
   int web_fd = socket(AF_INET, SOCK_STREAM, 0);
+  assert(web_fd != -1);
   struct sockaddr_in web_addr = {
       .sin_family = AF_INET,
       .sin_port = htons(port),
@@ -205,7 +215,9 @@ int init_web_socket(int port) {
 }
 
 int init_local_socket(const char* socket_path) {
+  unlink(socket_path);
   int local_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  assert(local_fd != -1);
   struct sockaddr_un local_addr = {.sun_family = AF_UNIX};
   strncpy(local_addr.sun_path, socket_path, sizeof local_addr.sun_path);
   listen_to_socket(local_fd, &local_addr, sizeof local_addr);
@@ -228,7 +240,7 @@ void on_destroy(void) {
 
 int main(int argc, char* argv[]) {
   (void)argc;
-  assert(argc == 3 + 1);
+  assert(argc == 2 + 1);
   signal(SIGINT, &terminate);
   atexit(&on_destroy);
 
@@ -240,6 +252,8 @@ int main(int argc, char* argv[]) {
   epoll_fd = epoll_create(1);
   web_socket_fd = init_web_socket(port);
   local_socket_fd = init_local_socket(socket_path);
+  printf("Server listening on port %d and socket %s\n", port, socket_path);
+
   struct clients clients_list = init_clients();
 
   pthread_t ping_thread;
@@ -265,7 +279,6 @@ int main(int argc, char* argv[]) {
         } else {
           handle_client_msg();
         }
-        // TODO: handle client's request
       }
     }
   }

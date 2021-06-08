@@ -33,7 +33,7 @@ struct message {
     unsigned move;
     enum game_end game_end_state;
     area_t new_area;
-    char* registered_name;
+    char registered_name[MAX_NAME_SIZE];
   } payload;
 };
 

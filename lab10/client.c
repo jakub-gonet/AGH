@@ -76,11 +76,13 @@ int connect_unix(char* connection_path) {
 }
 
 void send_msg(struct message* msg) {
-  write(socket_fd, msg, sizeof(*msg));
+  int ret = write(socket_fd, msg, sizeof(*msg));
+  assert(ret != -1);
 }
 
 void read_msg(struct message* msg) {
-  read(socket_fd, msg, sizeof(*msg));
+  int ret = read(socket_fd, msg, sizeof(*msg));
+  assert(ret != -1);
 }
 
 void send_move(int n) {
@@ -89,6 +91,7 @@ void send_move(int n) {
 }
 
 void send_register(char* name) {
+  printf("XD\n");
   struct message msg = {.type = msg_register};
   strcpy(msg.payload.registered_name, name);
   send_msg(&msg);
@@ -183,7 +186,6 @@ int main(int argc, char* argv[]) {
   epoll_fd = epoll_init();
 
   send_register(name);
-
   area_t area = {0};
 
   printf("Waiting for oponent...\n");

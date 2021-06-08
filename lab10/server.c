@@ -118,6 +118,7 @@ struct client* register_client_fd(struct clients* clients_list, int client_fd) {
   with(mutex) {
     client = find_first_empty_client(clients_list);
     if (client != NULL) {
+      printf("Registering client with fd: %d\n", client_fd);
       struct client new_client = {.is_empty = false, .fd = client_fd};
       memcpy(client, &new_client, sizeof(new_client));
     }
@@ -133,8 +134,23 @@ void delete_client(struct client* client) {
   }
 }
 
-void handle_client_msg(/*TODO*/) {
-  // TODO: handle client's request
+void handle_client_msg(struct message* msg, struct client* client) {
+  switch (msg->type) {
+    case msg_ping:
+      printf("Ping from %s\n", client->name);
+      with(mutex) { client->is_responding = true; }
+      break;
+    case msg_register:
+      printf("Registering %s\n", msg->payload.registered_name);
+      with(mutex) { strcpy(client->name, msg->payload.registered_name); }
+    case msg_move:
+      // TODO
+      break;
+    default:
+      printf("Unknown command: %d\n", msg->type);
+      exit(EXIT_FAILURE);
+      break;
+  }
 }
 
 struct clients init_clients(void) {
@@ -146,17 +162,50 @@ struct clients init_clients(void) {
   return clients_list;
 }
 
+void send_msg(int fd, struct message* msg) {
+  int ret = write(fd, msg, sizeof(*msg));
+  assert(ret != -1);
+}
+
+void read_msg(int fd, struct message* msg) {
+  int ret = read(fd, msg, sizeof(*msg));
+  assert(ret != -1);
+}
+
+void send_ping(int fd) {
+  struct message msg = {.type = msg_ping};
+  send_msg(fd, &msg);
+}
+
+void send_username_taken(int fd) {
+  struct message msg = {.type = msg_username_taken};
+  printf("Username taken\n");
+  send_msg(fd, &msg);
+}
+
+void send_server_full(int fd) {
+  printf("Server full\n");
+  struct message msg = {.type = msg_server_full};
+  send_msg(fd, &msg);
+}
+
 void* ping_clients(void* arg) {
   struct clients* clients = arg;
-  static struct message msg = {.type = msg_ping};
   while (true) {
     sleep(PING_INTERVAL);
     printf("Ping...\n");
     with(mutex) {
       for (size_t i = 0; i < MAX_CLIENTS; i++) {
         struct client client = clients->clients[i];
-        if (!client.is_empty) {
-          // TODO
+        if (client.is_empty) {
+          continue;
+        }
+        if (clients->clients[i].is_responding) {
+          clients->clients[i].is_responding = false;
+          printf("Pinging %s\n", clients->clients[i].name);
+          send_ping(clients->clients[i].fd);
+        } else {
+          delete_client(&clients->clients[i]);
         }
       }
     }
@@ -164,29 +213,12 @@ void* ping_clients(void* arg) {
   return NULL;
 }
 
-void send_msg(int fd, struct message* msg) {
-  write(fd, msg, sizeof(*msg));
-}
-
-void read_msg(int fd, struct message* msg) {
-  read(fd, msg, sizeof(*msg));
-}
-
-void send_username_taken(int fd) {
-  struct message msg = {.type = msg_username_taken};
-  send_msg(fd, &msg);
-}
-
-void send_server_full(int fd) {
-  struct message msg = {.type = msg_server_full};
-  send_msg(fd, &msg);
-}
-
 void epoll_client_fd(int fd, struct client* client) {
-  struct event_data event_data = {.type = client_event,
-                                  .payload.client = client};
+  struct event_data* event_data = malloc(sizeof(*event_data));
+  event_data->type = client_event;
+  event_data->payload.client = client;
   struct epoll_event event = {.events = EPOLLIN | EPOLLET,
-                              .data = {&event_data}};
+                              .data.ptr = event_data};
   epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &event);
 }
 
@@ -195,10 +227,14 @@ void listen_to_socket(int socket, void* addr, int addr_size) {
   assert(ret != -1);
   ret = listen(socket, MAX_CLIENTS);
   assert(ret != -1);
-  struct event_data event_data = {.type = socket_event,
-                                  .payload.socket = socket};
+  struct event_data* event_data = malloc(sizeof(*event_data));
+  event_data->type = socket_event;
+  event_data->payload.socket = socket;
+
   struct epoll_event event = {.events = EPOLLIN | EPOLLPRI,
-                              .data = {&event_data}};
+                              .data.ptr = event_data};
+  printf("listen_to_socket: %d\n",
+         ((struct event_data*)event.data.ptr)->payload.socket);
   epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket, &event);
 }
 
@@ -231,7 +267,6 @@ void terminate(int signum) {
 }
 
 void on_destroy(void) {
-  // TODO: disconnect clients first
   close(web_socket_fd);
   close(local_socket_fd);
   close(epoll_fd);
@@ -250,7 +285,7 @@ int main(int argc, char* argv[]) {
   const char* socket_path = argv[2];
 
   epoll_fd = epoll_create(1);
-  web_socket_fd = init_web_socket(port);
+  // web_socket_fd = init_web_socket(port);
   local_socket_fd = init_local_socket(socket_path);
   printf("Server listening on port %d and socket %s\n", port, socket_path);
 
@@ -266,7 +301,9 @@ int main(int argc, char* argv[]) {
     for (size_t i = 0; i < (size_t)n_ready; i++) {
       struct event_data* data = events[i].data.ptr;
       if (data->type == socket_event) {
+        printf("socket_event\n");
         int client_fd = accept(data->payload.socket, NULL, NULL);
+        assert(client_fd > 0);
         struct client* client = register_client_fd(&clients_list, client_fd);
         if (client != NULL) {
           epoll_client_fd(client_fd, client);
@@ -274,10 +311,13 @@ int main(int argc, char* argv[]) {
           send_server_full(client_fd);
         }
       } else if (data->type == client_event) {
+        printf("client_event\n");
         if (events[i].events & EPOLLHUP) {
           delete_client(data->payload.client);
         } else {
-          handle_client_msg();
+          struct message msg;
+          read_msg(data->payload.client->fd, &msg);
+          handle_client_msg(&msg, data->payload.client);
         }
       }
     }

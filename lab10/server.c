@@ -83,8 +83,6 @@ enum cell_type check_for_win(struct game* game) {
   return _;
 }
 
-void remove_client_by_name(char* client_name) {}
-
 struct client* find_first_empty_client(struct clients* clients_list) {
   for (size_t i = 0; i < MAX_CLIENTS; i++) {
     if (clients_list->clients[i].is_empty) {
@@ -93,8 +91,6 @@ struct client* find_first_empty_client(struct clients* clients_list) {
   }
   return NULL;
 }
-
-struct game* find_waiting_oponent(void) {}
 
 bool has_client_by_name(struct clients* clients_list, const char* client_name) {
   for (size_t i = 0; i < MAX_CLIENTS; i++) {
@@ -130,14 +126,6 @@ struct client* register_client_fd(struct clients* clients_list, int client_fd) {
   return client;
 }
 
-void delete_client(struct client* client) {
-  with(mutex) {
-    client->is_empty = true;
-    // TODO
-    // client->current_game.
-  }
-}
-
 struct clients init_clients(void) {
   struct clients clients_list;
   for (size_t i = 0; i < MAX_CLIENTS; i++) {
@@ -161,6 +149,23 @@ void send_ping(int fd) {
   send_msg(fd, &msg);
 }
 
+void send_game_end(int fd, enum game_end state) {
+  struct message msg = {.type = msg_game_end, .payload.game_end_state = state};
+  send_msg(fd, &msg);
+}
+
+void send_disconnect(int fd) {
+  struct message msg = {.type = msg_disconnect};
+  send_msg(fd, &msg);
+}
+
+void send_game_start(int fd, char* oponent_name, enum cell_type character) {
+  struct message msg = {.type = msg_game_start,
+                        .payload.game_start = {.character = character}};
+  strcpy(msg.payload.game_start.oponent_nickname, oponent_name);
+  send_msg(fd, &msg);
+}
+
 void send_username_taken(int fd) {
   struct message msg = {.type = msg_username_taken};
   printf("Username taken\n");
@@ -173,11 +178,60 @@ void send_server_full(int fd) {
   send_msg(fd, &msg);
 }
 
+void find_waiting_oponent(struct clients* clients, struct client* player) {
+  for (size_t i = 0; i < MAX_CLIENTS; i++) {
+    struct client* oponent = &clients->clients[i];
+    // TODO timing issue - playing before setting name?
+    if (oponent->is_empty || oponent == player) {
+      // same client, skip
+      continue;
+    }
+    if (oponent->current_game == NULL) {
+      // not in game, create game
+      printf("Creating game between %s and %s\n", player->name, oponent->name);
+      struct game* game = malloc(sizeof(*game));
+      memset(game->area, 0, sizeof(game->area));
+      if (rand() % 2 == 0) {
+        game->first_player = player;
+        game->second_player = oponent;
+      } else {
+        game->first_player = oponent;
+        game->second_player = player;
+      }
+      oponent->current_game = game;
+      player->current_game = game;
+
+      send_game_start(game->first_player->fd, game->second_player->name, X);
+      send_game_start(game->second_player->fd, game->first_player->name, O);
+    }
+  }
+}
+
+void delete_client(struct client* client) {
+  with(mutex) { client->is_empty = true; }
+  printf("Removing client with fd: %d\n", client->fd);
+  if (client->current_game) {
+    struct client* p1 = client->current_game->first_player;
+    struct client* p2 = client->current_game->second_player;
+
+    send_game_end(client->fd, LOSE);
+    if (p1 == client) {
+      send_game_end(p2->fd, WIN);
+    } else {
+      send_game_end(p1->fd, WIN);
+    }
+    p1->current_game = NULL;
+    free(p2->current_game);
+    p2->current_game = NULL;
+  }
+  close(client->fd);
+}
+
 void handle_client_msg(struct message* msg,
                        struct clients* clients_list,
                        struct client* client) {
   if (msg->type == msg_ping) {
-    printf("Ping from %s\n", client->name);
+    printf("\tPing from %s\n", client->name);
     with(mutex) { client->is_responding = true; }
   } else if (msg->type == msg_register) {
     char* name = msg->payload.registered_name;
@@ -185,9 +239,11 @@ void handle_client_msg(struct message* msg,
     with(mutex) {
       if (has_client_by_name(clients_list, name)) {
         send_username_taken(client->fd);
+        delete_client(client);
       } else {
         strcpy(client->name, name);
       }
+      find_waiting_oponent(clients_list, client);
     }
   } else if (msg->type == msg_move) {
     // TODO
@@ -201,18 +257,16 @@ void* ping_clients(void* arg) {
   struct clients* clients = arg;
   while (true) {
     sleep(PING_INTERVAL);
-    printf("Ping...\n");
+    printf("\n\tPing...\n");
     with(mutex) {
       for (size_t i = 0; i < MAX_CLIENTS; i++) {
         struct client* client = &clients->clients[i];
         if (client->is_empty) {
           continue;
         }
-        printf("Not empty, i: %d, is responding: %d, name: %s\n", i,
-               client->is_responding, client->name);
         if (client->is_responding) {
           client->is_responding = false;
-          printf("Pinging %s\n", client->name);
+          printf("\tPinging %s\n", client->name);
           send_ping(client->fd);
         } else {
           delete_client(client);

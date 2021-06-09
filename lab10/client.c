@@ -91,7 +91,6 @@ void send_move(int n) {
 }
 
 void send_register(char* name) {
-  printf("XD\n");
   struct message msg = {.type = msg_register};
   strcpy(msg.payload.registered_name, name);
   send_msg(&msg);

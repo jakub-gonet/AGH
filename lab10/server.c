@@ -85,10 +85,10 @@ enum cell_type check_for_win(struct game* game) {
 
 void remove_client_by_name(char* client_name) {}
 
-struct client* find_first_empty_client(struct clients* clients) {
+struct client* find_first_empty_client(struct clients* clients_list) {
   for (size_t i = 0; i < MAX_CLIENTS; i++) {
-    if (clients->clients[i].is_empty) {
-      return &clients->clients[i];
+    if (clients_list->clients[i].is_empty) {
+      return &clients_list->clients[i];
     }
   }
   return NULL;
@@ -99,7 +99,10 @@ struct game* find_waiting_oponent(void) {}
 bool has_client_by_name(struct clients* clients_list, const char* client_name) {
   for (size_t i = 0; i < MAX_CLIENTS; i++) {
     struct client client = clients_list->clients[i];
-    if (!client.is_empty && strcmp(client.name, client_name) == 0) {
+    if (client.is_empty) {
+      continue;
+    }
+    if (strcmp(client.name, client_name) == 0) {
       return true;
     }
   }
@@ -131,25 +134,6 @@ void delete_client(struct client* client) {
     client->is_empty = true;
     // TODO
     // client->current_game.
-  }
-}
-
-void handle_client_msg(struct message* msg, struct client* client) {
-  switch (msg->type) {
-    case msg_ping:
-      printf("Ping from %s\n", client->name);
-      with(mutex) { client->is_responding = true; }
-      break;
-    case msg_register:
-      printf("Registering %s\n", msg->payload.registered_name);
-      with(mutex) { strcpy(client->name, msg->payload.registered_name); }
-    case msg_move:
-      // TODO
-      break;
-    default:
-      printf("Unknown command: %d\n", msg->type);
-      exit(EXIT_FAILURE);
-      break;
   }
 }
 
@@ -187,6 +171,30 @@ void send_server_full(int fd) {
   printf("Server full\n");
   struct message msg = {.type = msg_server_full};
   send_msg(fd, &msg);
+}
+
+void handle_client_msg(struct message* msg,
+                       struct clients* clients_list,
+                       struct client* client) {
+  if (msg->type == msg_ping) {
+    printf("Ping from %s\n", client->name);
+    with(mutex) { client->is_responding = true; }
+  } else if (msg->type == msg_register) {
+    char* name = msg->payload.registered_name;
+    printf("Registering %s\n", name);
+    with(mutex) {
+      if (has_client_by_name(clients_list, name)) {
+        send_username_taken(client->fd);
+      } else {
+        strcpy(client->name, name);
+      }
+    }
+  } else if (msg->type == msg_move) {
+    // TODO
+  } else {
+    printf("Unknown command: %d\n", msg->type);
+    exit(EXIT_FAILURE);
+  }
 }
 
 void* ping_clients(void* arg) {
@@ -285,7 +293,7 @@ int main(int argc, char* argv[]) {
   const char* socket_path = argv[2];
 
   epoll_fd = epoll_create(1);
-  // web_socket_fd = init_web_socket(port);
+  web_socket_fd = init_web_socket(port);
   local_socket_fd = init_local_socket(socket_path);
   printf("Server listening on port %d and socket %s\n", port, socket_path);
 
@@ -313,11 +321,12 @@ int main(int argc, char* argv[]) {
       } else if (data->type == client_event) {
         printf("client_event\n");
         if (events[i].events & EPOLLHUP) {
+          printf("Client hung up, removing\n");
           delete_client(data->payload.client);
         } else {
           struct message msg;
           read_msg(data->payload.client->fd, &msg);
-          handle_client_msg(&msg, data->payload.client);
+          handle_client_msg(&msg, &clients_list, data->payload.client);
         }
       }
     }

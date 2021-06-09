@@ -137,6 +137,7 @@ void handle_msg(struct message* msg, area_t* area) {
       printf(
           "Server full, username already exists or server issued unknown "
           "command. Exiting\n");
+      close(socket_fd);
       exit(EXIT_FAILURE);
   }
 }

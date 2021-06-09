@@ -54,7 +54,7 @@ int connect_web(char* connection_path) {
   int ret = inet_pton(AF_INET, connection_path, &addr.sin_addr);
   assert(ret != 0);
   // create endpoint
-  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  int sock = socket(AF_INET, SOCK_DGRAM, 0);
   assert(sock > 0);
   // connect
   printf("Connecting to: %s\n", connection_path);
@@ -67,7 +67,7 @@ int connect_unix(char* connection_path) {
   struct sockaddr_un addr = {.sun_family = AF_UNIX};
   strcpy(addr.sun_path, connection_path);
   // create endpoint
-  int sock = socket(AF_UNIX, SOCK_STREAM, 0);
+  int sock = socket(AF_UNIX, SOCK_DGRAM, 0);
   assert(sock > 0);
   printf("Connecting to: %s\n", addr.sun_path);
   int ret = connect(sock, (struct sockaddr*)&addr, sizeof addr);

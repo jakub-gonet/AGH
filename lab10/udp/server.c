@@ -363,8 +363,6 @@ void epoll_client_fd(int fd, struct client* client) {
 void listen_to_socket(int socket, void* addr, int addr_size) {
   int ret = bind(socket, (struct sockaddr*)addr, addr_size);
   assert(ret != -1);
-  ret = listen(socket, MAX_CLIENTS);
-  assert(ret != -1);
   struct event_data* event_data = malloc(sizeof(*event_data));
   event_data->type = socket_event;
   event_data->payload.socket = socket;
@@ -377,7 +375,7 @@ void listen_to_socket(int socket, void* addr, int addr_size) {
 }
 
 int init_web_socket(int port) {
-  int web_fd = socket(AF_INET, SOCK_STREAM, 0);
+  int web_fd = socket(AF_INET, SOCK_DGRAM, 0);
   assert(web_fd != -1);
   struct sockaddr_in web_addr = {
       .sin_family = AF_INET,
@@ -390,7 +388,7 @@ int init_web_socket(int port) {
 
 int init_local_socket(const char* socket_path) {
   unlink(socket_path);
-  int local_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  int local_fd = socket(AF_UNIX, SOCK_DGRAM, 0);
   assert(local_fd != -1);
   struct sockaddr_un local_addr = {.sun_family = AF_UNIX};
   strncpy(local_addr.sun_path, socket_path, sizeof local_addr.sun_path);

@@ -122,7 +122,8 @@ struct client* register_client_fd(struct clients* clients_list, int client_fd) {
     client = find_first_empty_client(clients_list);
     if (client != NULL) {
       printf("Registering client with fd: %d\n", client_fd);
-      struct client new_client = {.is_empty = false, .fd = client_fd};
+      struct client new_client = {
+          .is_empty = false, .is_responding = true, .fd = client_fd};
       memcpy(client, &new_client, sizeof(new_client));
     }
   }
@@ -140,8 +141,7 @@ void delete_client(struct client* client) {
 struct clients init_clients(void) {
   struct clients clients_list;
   for (size_t i = 0; i < MAX_CLIENTS; i++) {
-    clients_list.clients[i] =
-        (struct client){.is_empty = true, .is_responding = true};
+    clients_list.clients[i] = (struct client){.is_empty = true};
   }
   return clients_list;
 }
@@ -204,16 +204,18 @@ void* ping_clients(void* arg) {
     printf("Ping...\n");
     with(mutex) {
       for (size_t i = 0; i < MAX_CLIENTS; i++) {
-        struct client client = clients->clients[i];
-        if (client.is_empty) {
+        struct client* client = &clients->clients[i];
+        if (client->is_empty) {
           continue;
         }
-        if (clients->clients[i].is_responding) {
-          clients->clients[i].is_responding = false;
-          printf("Pinging %s\n", clients->clients[i].name);
-          send_ping(clients->clients[i].fd);
+        printf("Not empty, i: %d, is responding: %d, name: %s\n", i,
+               client->is_responding, client->name);
+        if (client->is_responding) {
+          client->is_responding = false;
+          printf("Pinging %s\n", client->name);
+          send_ping(client->fd);
         } else {
-          delete_client(&clients->clients[i]);
+          delete_client(client);
         }
       }
     }

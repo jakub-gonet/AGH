@@ -123,7 +123,11 @@ void handle_msg(struct message* msg, area_t* area) {
       } else if (msg->payload.game_end_state == TIE) {
         printf("You tied!\n");
       }
-      exit(EXIT_SUCCESS);
+      memset(*area, 0, sizeof(area_t));
+      printf("Waiting for oponent...\n");
+      break;
+    case msg_move:
+      printf("Your turn\n");
       break;
     case msg_ping:
       send_ping();
@@ -159,7 +163,6 @@ void terminate(int signum) {
 }
 
 void unregister(void) {
-  send_disconnect();
   close(socket_fd);
   close(epoll_fd);
   printf("\nGoodbye!\n");
@@ -195,7 +198,8 @@ int main(int argc, char* argv[]) {
     assert(n_ready >= 0);
     for (size_t i = 0; i < (size_t)n_ready; i++) {
       if (events[i].data.fd == STDIN_FILENO) {
-        int cell_n = scanf("%d", &cell_n);
+        int cell_n;
+        scanf("%d", &cell_n);
         send_move(cell_n);
       } else if (events[i].data.fd == socket_fd) {
         if (events[i].events & EPOLLHUP) {

@@ -16,6 +16,8 @@
 
 #define MAX_CLIENTS 16
 #define PING_INTERVAL 10
+#define FIRST_PLAYER_C X
+#define SECOND_PLAYER_C O
 
 #define with(mutex)                                              \
   for (bool _x = true; _x && (pthread_mutex_lock(&mutex), true); \
@@ -25,6 +27,7 @@ struct game {
   struct client* first_player;
   struct client* second_player;
   area_t area;
+  bool first_moved_last_time;
 };
 
 struct client {
@@ -81,6 +84,16 @@ enum cell_type check_for_win(struct game* game) {
     }
   }
   return _;
+}
+
+bool area_full(struct game* game) {
+  int filled_cells = 0;
+  for (size_t y = 0; y < GAME_SIZE; y++) {
+    for (size_t x = 0; x < GAME_SIZE; x++) {
+      filled_cells += game->area[y][x] == _;
+    }
+  }
+  return filled_cells == GAME_SIZE * GAME_SIZE;
 }
 
 struct client* find_first_empty_client(struct clients* clients_list) {
@@ -154,11 +167,6 @@ void send_game_end(int fd, enum game_end state) {
   send_msg(fd, &msg);
 }
 
-void send_disconnect(int fd) {
-  struct message msg = {.type = msg_disconnect};
-  send_msg(fd, &msg);
-}
-
 void send_game_start(int fd, char* oponent_name, enum cell_type character) {
   struct message msg = {.type = msg_game_start,
                         .payload.game_start = {.character = character}};
@@ -178,7 +186,21 @@ void send_server_full(int fd) {
   send_msg(fd, &msg);
 }
 
+void send_move(int fd) {
+  struct message msg = {.type = msg_move};
+  send_msg(fd, &msg);
+}
+
+void send_new_game_state(int fd, area_t area) {
+  struct message msg = {.type = msg_new_game_state};
+  memcpy(msg.payload.new_area, area, sizeof(area_t));
+  send_msg(fd, &msg);
+}
+
 void find_waiting_oponent(struct clients* clients, struct client* player) {
+  if (player->current_game != NULL) {
+    return;
+  }
   for (size_t i = 0; i < MAX_CLIENTS; i++) {
     struct client* oponent = &clients->clients[i];
     // TODO timing issue - playing before setting name?
@@ -190,6 +212,7 @@ void find_waiting_oponent(struct clients* clients, struct client* player) {
       // not in game, create game
       printf("Creating game between %s and %s\n", player->name, oponent->name);
       struct game* game = malloc(sizeof(*game));
+      game->first_moved_last_time = false;
       memset(game->area, 0, sizeof(game->area));
       if (rand() % 2 == 0) {
         game->first_player = player;
@@ -201,10 +224,19 @@ void find_waiting_oponent(struct clients* clients, struct client* player) {
       oponent->current_game = game;
       player->current_game = game;
 
-      send_game_start(game->first_player->fd, game->second_player->name, X);
-      send_game_start(game->second_player->fd, game->first_player->name, O);
+      send_game_start(game->first_player->fd, game->second_player->name,
+                      FIRST_PLAYER_C);
+      send_game_start(game->second_player->fd, game->first_player->name,
+                      SECOND_PLAYER_C);
+      send_move(game->first_player->fd);
     }
   }
+}
+
+void delete_game(struct game* game) {
+  game->first_player->current_game = NULL;
+  free(game->second_player->current_game);
+  game->second_player->current_game = NULL;
 }
 
 void delete_client(struct client* client) {
@@ -213,16 +245,13 @@ void delete_client(struct client* client) {
   if (client->current_game) {
     struct client* p1 = client->current_game->first_player;
     struct client* p2 = client->current_game->second_player;
-
-    send_game_end(client->fd, LOSE);
+    // send_game_end(client->fd, LOSE);
     if (p1 == client) {
       send_game_end(p2->fd, WIN);
     } else {
       send_game_end(p1->fd, WIN);
     }
-    p1->current_game = NULL;
-    free(p2->current_game);
-    p2->current_game = NULL;
+    delete_game(client->current_game);
   }
   close(client->fd);
 }
@@ -246,7 +275,52 @@ void handle_client_msg(struct message* msg,
       find_waiting_oponent(clients_list, client);
     }
   } else if (msg->type == msg_move) {
-    // TODO
+    // FIXME looks awful
+    struct game* game = client->current_game;
+    if (game == NULL ||
+        (game->first_moved_last_time && game->first_player == client) ||
+        (!game->first_moved_last_time && game->second_player == client) ||
+        msg->payload.move >= GAME_SIZE * GAME_SIZE ||
+        game->area[msg->payload.move / GAME_SIZE]
+                  [msg->payload.move % GAME_SIZE] != _) {
+      printf("Ignoring move from player %s\n", client->name);
+      return;
+    }
+    printf("Move from %s, %d\n", client->name, msg->payload.move);
+    game->first_moved_last_time = !game->first_moved_last_time;
+    int move = msg->payload.move;
+    struct client* p1 = game->first_player;
+    struct client* p2 = game->second_player;
+    game->area[move / GAME_SIZE][move % GAME_SIZE] =
+        p1 == client ? FIRST_PLAYER_C : SECOND_PLAYER_C;
+    send_new_game_state(game->second_player->fd, game->area);
+    send_new_game_state(p1->fd, game->area);
+    if (area_full(game)) {
+      send_game_end(p1->fd, TIE);
+      send_game_end(p2->fd, TIE);
+      delete_game(game);
+
+      find_waiting_oponent(clients_list, p1);
+      find_waiting_oponent(clients_list, p2);
+      return;
+    }
+
+    enum cell_type has_won = check_for_win(game);
+    if (has_won != _) {
+      if (has_won == FIRST_PLAYER_C) {
+        send_game_end(p1->fd, WIN);
+        send_game_end(p2->fd, LOSE);
+      } else {
+        send_game_end(p1->fd, LOSE);
+        send_game_end(p2->fd, WIN);
+      }
+      delete_game(game);
+      find_waiting_oponent(clients_list, p1);
+      find_waiting_oponent(clients_list, p2);
+      return;
+    }
+    send_move(p1 == client ? p2->fd : p1->fd);
+
   } else {
     printf("Unknown command: %d\n", msg->type);
     exit(EXIT_FAILURE);
@@ -341,6 +415,7 @@ int main(int argc, char* argv[]) {
   (void)argc;
   assert(argc == 2 + 1);
   signal(SIGINT, &terminate);
+  signal(SIGPIPE, SIG_IGN);
   atexit(&on_destroy);
 
   srand(time(NULL));

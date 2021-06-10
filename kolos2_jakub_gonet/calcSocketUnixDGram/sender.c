@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #define UNIX_PATH_MAX 108
-#define SOCK_PATH "sock_path"
+#define SOCK_PATH "123"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {

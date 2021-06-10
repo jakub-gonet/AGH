@@ -22,4 +22,3 @@ test:  sender receiver
 	./sender -13
 	./receiver &
 	./sender cos
-all: sender receiver

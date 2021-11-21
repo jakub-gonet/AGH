@@ -1,0 +1,13 @@
+# ignore files without extension
+*
+!*/
+!*.*
+!Makefile
+
+.DS_Store
+*.o
+*.a
+*.so
+bin/
+.vscode/
+test_files

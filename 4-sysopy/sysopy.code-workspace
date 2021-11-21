@@ -1,0 +1,37 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"C_Cpp.clang_format_style": "Chromium",
+		"files.associations": {
+			"assert.h": "c",
+			"stdbool.h": "c",
+			"types.h": "c",
+			"errno.h": "c",
+			"dirent.h": "c",
+			"param.h": "c",
+			"typeinfo": "c",
+			"time.h": "c",
+			"stdio.h": "c",
+			"signal.h": "c",
+			"sigset_t.h": "c",
+			"cstdlib": "c",
+			"wait.h": "c",
+			"common.h": "c",
+			"stdlib.h": "c",
+			"limits": "c",
+			"type_traits": "c",
+			"unistd.h": "c",
+			"ipc.h": "c",
+			"mqueue.h": "c",
+			"math.h": "c",
+			"string.h": "c",
+			"cmath": "c",
+			"stat.h": "c",
+			"socket.h": "c"
+		}
+	}
+}

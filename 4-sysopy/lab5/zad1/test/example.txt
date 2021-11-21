@@ -1,0 +1,7 @@
+składnik1 = cat /etc/passwd | wc -l
+składnik2 = ls -hal | grep \.$
+składnik3 = xargs printf 0x%x\n
+
+składnik1 | składnik3
+składnik1
+składnik2
